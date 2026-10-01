@@ -1,0 +1,158 @@
+TIME: 2026-10-01T10:38:25.281969+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "dumpsys audio"]
+EXIT: 0
+
+
+MediaFocusControl dump time: 上午10:38:25
+
+Audio Focus stack entries (last is top of stack):
+
+ Notify on duck: true
+
+
+Remote Control stack entries (last is top of stack):
+
+Remote Control Client stack entries (last is top of stack):
+
+Current remote control generation ID = 0
+
+Remote Volume State:
+  has remote: false
+  is remote active: false
+  rccId: -1
+  volume handling: PLAYBACK_VOLUME_VARIABLE(1)
+  volume: 30
+  volume steps: 30
+
+Remote Control Display list entries:
+
+Stream volumes (device: index)
+- STREAM_VOICE_CALL:
+   Muted: false
+   Min: 5
+   Max: 30
+   Current: 40000000 (default): 30
+   Devices: speaker
+- STREAM_SYSTEM:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 2 (speaker): 30, 40000000 (default): 30
+   Devices: speaker
+- STREAM_RING:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 2 (speaker): 30, 40000000 (default): 30
+   Devices: speaker
+- STREAM_MUSIC:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_ALARM:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 40000000 (default): 30
+   Devices: speaker
+- STREAM_NOTIFICATION:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 2 (speaker): 30, 40000000 (default): 30
+   Devices: speaker
+- STREAM_BLUETOOTH_SCO:
+   Muted: false
+   Min: 5
+   Max: 30
+   Current: 40000000 (default): 30
+   Devices: speaker
+- STREAM_SYSTEM_ENFORCED:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 2 (speaker): 30, 40000000 (default): 30
+   Devices: speaker
+- STREAM_DTMF:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_TTS:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_NAVI:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_SUB:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_SPEECH_RECOGNITION:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_CARPLAY_VOICE_CALL:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_CARPLAY_MUSIC:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_CARPLAY_NAVI:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+- STREAM_CARPLAY_SPEECH_RECOGNITION:
+   Muted: false
+   Min: 0
+   Max: 30
+   Current: 4 (headset): 10, 8 (headphone): 10, 40000000 (default): 30
+   Devices: speaker
+
+- mute affected streams = 0x482e
+
+Ringer mode: 
+- mode (internal) = NORMAL
+- mode (external) = NORMAL
+- ringer mode affected streams = 0xa6 (STREAM_SYSTEM,STREAM_RING,STREAM_NOTIFICATION,STREAM_SYSTEM_ENFORCED)
+- ringer mode muted streams = 0x0
+- delegate = ZenModeHelper
+
+Audio routes:
+  mMainType=0x0
+  mBluetoothName=null
+
+Other state:
+  mVolumeController=VolumeController(android.os.BinderProxy@2d4241a,mVisible=false)
+  mSafeMediaVolumeState=SAFE_MEDIA_VOLUME_ACTIVE
+  mSafeMediaVolumeIndex=100
+  mPendingVolumeCommand=null
+  mMusicActiveMs=0
+  mMcc=0
+  mCameraSoundForced=false
+  mHasVibrator=false
+  mControllerService={mUid=0,mComponent=null}
+  mVolumePolicy=VolumePolicy[volumeDownToEnterSilent=true,volumeUpToExitSilent=true,doNotDisturbWhenSilent=true,vibrateToSilentDebounce=400]
+
+Audio policies:

@@ -1,0 +1,75 @@
+TIME: 2026-10-01T10:31:37.089635+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "dumpsys usb"]
+EXIT: 0
+
+USB Manager State:
+  USB Device State:
+    mCurrentFunctions: mtp,adb
+    mCurrentFunctionsApplied: true
+    mConnected: false
+    mConfigured: false
+    mUsbDataUnlocked: false
+    mCurrentAccessory: null
+    Kernel state: DISCONNECTED
+  IOException: java.io.FileNotFoundException: /sys/class/android_usb/android0/functions: open failed: ENOENT (No such file or directory)
+  USB Host State:
+    /dev/bus/usb/003/002: UsbDevice[mName=/dev/bus/usb/003/002,mVendorId=7111,mProductId=4645,mClass=0,mSubclass=0,mProtocol=0,mManufacturerName=Android,mProductName=MDM9607-MTP _SN:96D67B6C,mVersion=2.0,mSerialNumber=96d67b6c,mConfigurations=[
+  UsbConfiguration[mId=1,mName=null,mAttributes=160,mMaxPower=250,mInterfaces=[
+  UsbInterface[mId=0,mAlternateSetting=0,mName=CDC Ethernet Control Model (ECM),mClass=2,mSubclass=6,mProtocol=0,mEndpoints=[
+  UsbEndpoint[mAddress=130,mAttributes=3,mMaxPacketSize=16,mInterval=9]]
+  UsbInterface[mId=1,mAlternateSetting=0,mName=null,mClass=10,mSubclass=0,mProtocol=0,mEndpoints=[]
+  UsbInterface[mId=1,mAlternateSetting=1,mName=CDC Ethernet Data,mClass=10,mSubclass=0,mProtocol=0,mEndpoints=[
+  UsbEndpoint[mAddress=129,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=1,mAttributes=2,mMaxPacketSize=512,mInterval=0]]
+  UsbInterface[mId=2,mAlternateSetting=0,mName=null,mClass=255,mSubclass=255,mProtocol=255,mEndpoints=[
+  UsbEndpoint[mAddress=131,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=2,mAttributes=2,mMaxPacketSize=512,mInterval=0]]
+  UsbInterface[mId=3,mAlternateSetting=0,mName=ADB Interface,mClass=255,mSubclass=66,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=3,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=132,mAttributes=2,mMaxPacketSize=512,mInterval=0]]]]
+    /dev/bus/usb/001/003: UsbDevice[mName=/dev/bus/usb/001/003,mVendorId=1452,mProductId=4776,mClass=0,mSubclass=0,mProtocol=0,mManufacturerName=Apple Inc.,mProductName=iPhone,mVersion=2.0,mSerialNumber=0000811000080D3C2261801E,mConfigurations=[
+  UsbConfiguration[mId=1,mName=PTP,mAttributes=192,mMaxPower=250,mInterfaces=[
+  UsbInterface[mId=0,mAlternateSetting=0,mName=PTP,mClass=6,mSubclass=1,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=2,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=129,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=131,mAttributes=3,mMaxPacketSize=64,mInterval=10]]]
+  UsbConfiguration[mId=2,mName=iPod USB Interface,mAttributes=192,mMaxPower=250,mInterfaces=[
+  UsbInterface[mId=0,mAlternateSetting=0,mName=null,mClass=1,mSubclass=1,mProtocol=0,mEndpoints=[]
+  UsbInterface[mId=1,mAlternateSetting=0,mName=null,mClass=1,mSubclass=2,mProtocol=0,mEndpoints=[]
+  UsbInterface[mId=1,mAlternateSetting=1,mName=null,mClass=1,mSubclass=2,mProtocol=0,mEndpoints=[
+  UsbEndpoint[mAddress=129,mAttributes=1,mMaxPacketSize=192,mInterval=4]]
+  UsbInterface[mId=2,mAlternateSetting=0,mName=null,mClass=3,mSubclass=0,mProtocol=0,mEndpoints=[
+  UsbEndpoint[mAddress=131,mAttributes=3,mMaxPacketSize=64,mInterval=1]]]
+  UsbConfiguration[mId=3,mName=PTP + Apple Mobile Device,mAttributes=192,mMaxPower=250,mInterfaces=[
+  UsbInterface[mId=0,mAlternateSetting=0,mName=PTP,mClass=6,mSubclass=1,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=2,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=129,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=131,mAttributes=3,mMaxPacketSize=64,mInterval=10]]
+  UsbInterface[mId=1,mAlternateSetting=0,mName=Apple USB Multiplexor,mClass=255,mSubclass=254,mProtocol=2,mEndpoints=[
+  UsbEndpoint[mAddress=4,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=133,mAttributes=2,mMaxPacketSize=512,mInterval=0]]]
+  UsbConfiguration[mId=4,mName=PTP + Apple Mobile Device + Apple USB Ethernet,mAttributes=192,mMaxPower=250,mInterfaces=[
+  UsbInterface[mId=0,mAlternateSetting=0,mName=PTP,mClass=6,mSubclass=1,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=2,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=129,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=131,mAttributes=3,mMaxPacketSize=64,mInterval=10]]
+  UsbInterface[mId=1,mAlternateSetting=0,mName=Apple USB Multiplexor,mClass=255,mSubclass=254,mProtocol=2,mEndpoints=[
+  UsbEndpoint[mAddress=4,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=133,mAttributes=2,mMaxPacketSize=512,mInterval=0]]
+  UsbInterface[mId=2,mAlternateSetting=0,mName=AppleUSBEthernet,mClass=255,mSubclass=253,mProtocol=1,mEndpoints=[]
+  UsbInterface[mId=2,mAlternateSetting=1,mName=AppleUSBEthernet,mClass=255,mSubclass=253,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=134,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=5,mAttributes=2,mMaxPacketSize=512,mInterval=0]]
+  UsbInterface[mId=2,mAlternateSetting=2,mName=AppleUSBEthernet,mClass=255,mSubclass=253,mProtocol=1,mEndpoints=[
+  UsbEndpoint[mAddress=134,mAttributes=2,mMaxPacketSize=512,mInterval=0]
+  UsbEndpoint[mAddress=5,mAttributes=2,mMaxPacketSize=512,mInterval=0]]]]
+  USB Port State:
+    <no ports>
+  USB Audio Devices:
+    /dev/bus/usb/001/003: UsbAudioDevice: [card: 6, device: 0, name: USB-Audio - iPhone, hasPlayback: false, hasCapture: true, class: 0x80000002]
+  USB MIDI Devices:
+  Settings for user 0:
+    Device permissions:
+    Accessory permissions:
+    Device preferences:
+    Accessory preferences:

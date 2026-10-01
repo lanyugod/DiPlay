@@ -1,0 +1,24 @@
+TIME: 2026-10-01T10:31:34.458626+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "pm list features"]
+EXIT: 0
+
+feature:reqGlEsVersion=0x20000
+feature:android.hardware.bluetooth
+feature:android.hardware.bluetooth_le
+feature:android.hardware.camera
+feature:android.hardware.camera.any
+feature:android.hardware.ethernet
+feature:android.hardware.faketouch
+feature:android.hardware.microphone
+feature:android.hardware.screen.landscape
+feature:android.hardware.touchscreen
+feature:android.hardware.usb.accessory
+feature:android.hardware.usb.host
+feature:android.hardware.wifi
+feature:android.hardware.wifi.direct
+feature:android.software.app_widgets
+feature:android.software.backup
+feature:android.software.device_admin
+feature:android.software.home_screen
+feature:android.software.voice_recognizers
+feature:android.software.webview

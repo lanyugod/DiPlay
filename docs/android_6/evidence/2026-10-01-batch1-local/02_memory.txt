@@ -1,0 +1,44 @@
+TIME: 2026-10-01T10:31:35.226541+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "cat /proc/meminfo"]
+EXIT: 0
+
+MemTotal:        1926428 kB
+MemFree:           62724 kB
+MemAvailable:    1105232 kB
+Buffers:          278304 kB
+Cached:           847036 kB
+SwapCached:            0 kB
+Active:           902844 kB
+Inactive:         802108 kB
+Active(anon):     579608 kB
+Inactive(anon):    56680 kB
+Active(file):     323236 kB
+Inactive(file):   745428 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+HighTotal:       1220604 kB
+HighFree:          45844 kB
+LowTotal:         705824 kB
+LowFree:           16880 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:                92 kB
+Writeback:             0 kB
+AnonPages:        579588 kB
+Mapped:           553760 kB
+Shmem:             56732 kB
+Slab:              39720 kB
+SReclaimable:      15348 kB
+SUnreclaim:        24372 kB
+KernelStack:       10216 kB
+PageTables:        21868 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      963212 kB
+Committed_AS:   22769204 kB
+VmallocTotal:     286720 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+CmaTotal:          24576 kB
+CmaFree:           14192 kB

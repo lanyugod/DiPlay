@@ -1,0 +1,6 @@
+TIME: 2026-10-01T10:38:25.468149+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "ls -l /dev/tun /dev/net/tun"]
+EXIT: 0
+
+crw-rw---- system   vpn       10, 200 1970-01-01 08:00 tun
+/dev/net/tun: No such file or directory

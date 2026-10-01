@@ -1,0 +1,6 @@
+TIME: 2026-10-01T10:31:35.254621+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "wm size; wm density"]
+EXIT: 0
+
+Physical size: 1280x720
+Physical density: 160

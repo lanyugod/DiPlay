@@ -1,0 +1,17 @@
+{
+  "conversationId": "6abcd4f7-e0f8-83e9-80c8-3dc35c1b702c",
+  "sourceType": "read_thread attachment",
+  "importedAt": "2026-10-01T13:04:34.805779+08:00",
+  "files": [
+    {
+      "source": "粘贴的文本 (1).txt",
+      "localFile": "historical_adb_output.txt",
+      "sha256": "c89b5cfb78cd18b3d386c30b6b0a07f76898f33ce6556c27618d8db5a28f9d54"
+    },
+    {
+      "source": "README.md",
+      "localFile": "original_android6_plan.md",
+      "sha256": "5ab05f45897f09d57e35ac90dc43695aedbf453e4c2faabcfbc2bcbc66eb800d"
+    }
+  ]
+}

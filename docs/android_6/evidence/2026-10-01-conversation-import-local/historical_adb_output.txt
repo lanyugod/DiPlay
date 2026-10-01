@@ -1,0 +1,336 @@
+➜  ~ 
+➜  ~ adb shell getprop ro.build.version.release
+adb shell getprop ro.build.version.sdk
+adb shell getprop ro.build.fingerprint
+adb shell getprop ro.build.description
+adb shell getprop ro.build.characteristics
+
+adb shell getprop ro.product.manufacturer
+adb shell getprop ro.product.brand
+adb shell getprop ro.product.model
+adb shell getprop ro.product.name
+adb shell getprop ro.product.device
+adb shell getprop ro.product.board
+
+adb shell getprop ro.hardware
+adb shell getprop ro.board.platform
+
+adb shell getprop ro.product.cpu.abi
+adb shell getprop ro.product.cpu.abilist
+adb shell getprop ro.product.cpu.abilist32
+adb shell getprop ro.product.cpu.abilist64
+
+adb shell uname -a
+adb shell cat /proc/cpuinfo
+6.0.1
+23
+HeadUnit/full_j6headunit/j6headunit:6.0.1/M4B30Z/228:user/dev-keys
+full_j6headunit-user 6.0.1 M4B30Z 228 dev-keys
+tablet,nosdcard
+GuangDong_YF_Technology_Co_Ltd
+HeadUnit
+IHU01
+full_j6headunit
+j6headunit
+j6headunit
+j6headunitboard
+j6headunit
+armeabi-v7a
+armeabi-v7a,armeabi
+armeabi-v7a,armeabi
+
+Linux localhost 4.4.45 #1 SMP PREEMPT Fri Jan 22 23:20:35 CST 2021 armv7l
+processor       : 0
+model name      : ARMv7 Processor rev 2 (v7l)
+BogoMIPS        : 15.68
+Features        : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer : 0x41
+CPU architecture: 7
+CPU variant     : 0x2
+CPU part        : 0xc0f
+CPU revision    : 2
+
+processor       : 1
+model name      : ARMv7 Processor rev 2 (v7l)
+BogoMIPS        : 15.68
+Features        : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer : 0x41
+CPU architecture: 7
+CPU variant     : 0x2
+CPU part        : 0xc0f
+CPU revision    : 2
+
+Hardware        : Generic DRA74X (Flattened Device Tree)
+Revision        : 0000
+Serial          : 0000000000000000
+➜  ~ adb shell cat /proc/meminfo
+adb shell wm size
+adb shell wm density
+adb shell dumpsys display
+MemTotal:        1926428 kB
+MemFree:          119324 kB
+MemAvailable:    1194316 kB
+Buffers:          276164 kB
+Cached:           881272 kB
+SwapCached:            0 kB
+Active:           705584 kB
+Inactive:         973748 kB
+Active(anon):     521896 kB
+Inactive(anon):    55856 kB
+Active(file):     183688 kB
+Inactive(file):   917892 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+HighTotal:       1220604 kB
+HighFree:         110364 kB
+LowTotal:         705824 kB
+LowFree:            8960 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:               100 kB
+Writeback:             0 kB
+AnonPages:        521912 kB
+Mapped:           511464 kB
+Shmem:             55896 kB
+Slab:              37700 kB
+SReclaimable:      14488 kB
+SUnreclaim:        23212 kB
+KernelStack:        9488 kB
+PageTables:        21304 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      963212 kB
+Committed_AS:   21753212 kB
+VmallocTotal:     286720 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+CmaTotal:          24576 kB
+CmaFree:           20376 kB
+Physical size: 1280x720
+Physical density: 160
+DISPLAY MANAGER (dumpsys display)
+  mOnlyCode=false
+  mSafeMode=false
+  mPendingTraversal=false
+  mGlobalDisplayState=ON
+  mNextNonDefaultDisplayId=1
+  mDefaultViewport=DisplayViewport{valid=true, displayId=0, orientation=0, logicalFrame=Rect(0, 0 - 1280, 720), physicalFrame=Rect(0, 0 - 1280, 720), deviceWidth=1280, deviceHeight=720}
+  mExternalTouchViewport=DisplayViewport{valid=false, displayId=0, orientation=0, logicalFrame=Rect(0, 0 - 0, 0), physicalFrame=Rect(0, 0 - 0, 0), deviceWidth=0, deviceHeight=0}
+  mSingleDisplayDemoMode=false
+  mWifiDisplayScanRequestCount=0
+
+Display Adapters: size=4
+  LocalDisplayAdapter
+  OverlayDisplayAdapter
+    mCurrentOverlaySetting=
+    mOverlays: size=0
+  WifiDisplayAdapter
+    mCurrentStatus=WifiDisplayStatus{featureState=1, scanState=0, activeDisplayState=0, activeDisplay=null, displays=[], sessionInfo=WifiDisplaySessionInfo:
+        Client/Owner: Client
+        GroupId: 
+        Passphrase: 
+        SessionId: 0
+        IP Address: }
+    mFeatureState=1
+    mScanState=0
+    mActiveDisplayState=0
+    mActiveDisplay=null
+    mDisplays=[]
+    mAvailableDisplays=[]
+    mRememberedDisplays=[]
+    mPendingStatusChangeBroadcast=false
+    mSupportsProtectedBuffers=false
+    mDisplayController:
+      mWifiDisplayOnSetting=true
+      mWifiP2pEnabled=false
+      mWfdEnabled=false
+      mWfdEnabling=false
+      mNetworkInfo=null
+      mScanRequested=false
+      mDiscoverPeersInProgress=false
+      mDesiredDevice=null
+      mConnectingDisplay=null
+      mDisconnectingDisplay=null
+      mCancelingDisplay=null
+      mConnectedDevice=null
+      mConnectionRetriesLeft=0
+      mRemoteDisplay=null
+      mRemoteDisplayInterface=null
+      mRemoteDisplayConnected=false
+      mAdvertisedDisplay=null
+      mAdvertisedDisplaySurface=null
+      mAdvertisedDisplayWidth=0
+      mAdvertisedDisplayHeight=0
+      mAdvertisedDisplayFlags=0
+      mAvailableWifiDisplayPeers: size=0
+  VirtualDisplayAdapter
+
+Display Devices: size=1
+  DisplayDeviceInfo{"内置屏幕": uniqueId="local:0", 1280 x 720, modeId 1, defaultModeId 1, supportedModes [{id=1, width=1280, height=720, fps=60.000004}], colorTransformId 1, defaultColorTransformId 1, supportedColorTransforms [{id=1, colorTransform=0}], density 160, 150.0 x 150.0 dpi, appVsyncOff 7500000, presDeadline 12666666, touch INTERNAL, rotation 0, type BUILT_IN, state ON, FLAG_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS}
+    mAdapter=LocalDisplayAdapter
+    mUniqueId=local:0
+    mDisplayToken=android.os.BinderProxy@ab5b23c
+    mCurrentLayerStack=0
+    mCurrentOrientation=0
+    mCurrentLayerStackRect=Rect(0, 0 - 1280, 720)
+    mCurrentDisplayRect=Rect(0, 0 - 1280, 720)
+    mCurrentSurface=null
+    mBuiltInDisplayId=0
+    mActivePhysIndex=0
+    mActiveModeId=1
+    mActiveColorTransformId=1
+    mState=ON
+    mBrightness=50
+    mBacklight=com.android.server.lights.LightsService$LightImpl@2135bc5
+    mDisplayInfos=
+      PhysicalDisplayInfo{1280 x 720, 60.000004 fps, density 1.0, 150.0 x 150.0 dpi, secure true, appVsyncOffset 7500000, bufferDeadline 12666666, colorTransform 0}
+    mSupportedModes=
+      DisplayModeRecord{mMode={id=1, width=1280, height=720, fps=60.000004}}
+    mSupportedColorTransforms=[
+    {id=1, colorTransform=0}]
+
+Logical Displays: size=1
+  Display 0:
+    mDisplayId=0
+    mLayerStack=0
+    mHasContent=true
+    mRequestedMode=0
+    mRequestedColorTransformId=0
+    mDisplayOffset=(0, 0)
+    mPrimaryDisplayDevice=内置屏幕
+    mBaseDisplayInfo=DisplayInfo{"内置屏幕", uniqueId "local:0", app 1280 x 720, real 1280 x 720, largest app 1280 x 720, smallest app 1280 x 720, mode 1, defaultMode 1, modes [{id=1, width=1280, height=720, fps=60.000004}], colorTransformId 1, defaultColorTransformId 1, supportedColorTransforms [{id=1, colorTransform=0}], rotation 0, density 160 (150.0 x 150.0) dpi, layerStack 0, appVsyncOff 7500000, presDeadline 12666666, type BUILT_IN, state ON, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS}
+    mOverrideDisplayInfo=DisplayInfo{"内置屏幕", uniqueId "local:0", app 1160 x 720, real 1280 x 720, largest app 1160 x 1232, smallest app 720 x 720, mode 1, defaultMode 1, modes [{id=1, width=1280, height=720, fps=60.000004}], colorTransformId 1, defaultColorTransformId 1, supportedColorTransforms [{id=1, colorTransform=0}], rotation 0, density 160 (150.0 x 150.0) dpi, layerStack 0, appVsyncOff 7500000, presDeadline 12666666, type BUILT_IN, state ON, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS}
+
+Callbacks: size=44
+  0: mPid=543, mWifiDisplayScanRequested=false
+  1: mPid=815, mWifiDisplayScanRequested=false
+  2: mPid=821, mWifiDisplayScanRequested=false
+  3: mPid=828, mWifiDisplayScanRequested=false
+  4: mPid=942, mWifiDisplayScanRequested=false
+  5: mPid=1068, mWifiDisplayScanRequested=false
+  6: mPid=1082, mWifiDisplayScanRequested=false
+  7: mPid=1089, mWifiDisplayScanRequested=false
+  8: mPid=1175, mWifiDisplayScanRequested=false
+  9: mPid=1180, mWifiDisplayScanRequested=false
+  10: mPid=1186, mWifiDisplayScanRequested=false
+  11: mPid=1199, mWifiDisplayScanRequested=false
+  12: mPid=1211, mWifiDisplayScanRequested=false
+  13: mPid=1226, mWifiDisplayScanRequested=false
+  14: mPid=1239, mWifiDisplayScanRequested=false
+  15: mPid=1244, mWifiDisplayScanRequested=false
+  16: mPid=1249, mWifiDisplayScanRequested=false
+  17: mPid=1261, mWifiDisplayScanRequested=false
+  18: mPid=1275, mWifiDisplayScanRequested=false
+  19: mPid=1284, mWifiDisplayScanRequested=false
+  20: mPid=1311, mWifiDisplayScanRequested=false
+  21: mPid=1349, mWifiDisplayScanRequested=false
+  22: mPid=1373, mWifiDisplayScanRequested=false
+  23: mPid=1381, mWifiDisplayScanRequested=false
+  24: mPid=1442, mWifiDisplayScanRequested=false
+  25: mPid=1456, mWifiDisplayScanRequested=false
+  26: mPid=1473, mWifiDisplayScanRequested=false
+  27: mPid=1488, mWifiDisplayScanRequested=false
+  28: mPid=1504, mWifiDisplayScanRequested=false
+  29: mPid=1562, mWifiDisplayScanRequested=false
+  30: mPid=1752, mWifiDisplayScanRequested=false
+  31: mPid=1821, mWifiDisplayScanRequested=false
+  32: mPid=1830, mWifiDisplayScanRequested=false
+  33: mPid=1967, mWifiDisplayScanRequested=false
+  34: mPid=2059, mWifiDisplayScanRequested=false
+  35: mPid=2066, mWifiDisplayScanRequested=false
+  36: mPid=2099, mWifiDisplayScanRequested=false
+  37: mPid=2190, mWifiDisplayScanRequested=false
+  38: mPid=2231, mWifiDisplayScanRequested=false
+  39: mPid=2247, mWifiDisplayScanRequested=false
+  40: mPid=2268, mWifiDisplayScanRequested=false
+  41: mPid=2387, mWifiDisplayScanRequested=false
+  42: mPid=2433, mWifiDisplayScanRequested=false
+  43: mPid=2475, mWifiDisplayScanRequested=false
+
+Display Power Controller Locked State:
+  mDisplayReadyLocked=true
+  mPendingRequestLocked=policy=BRIGHT, useProximitySensor=false, screenBrightness=50, screenAutoBrightnessAdjustment=0.0, brightnessSetByUser=true, useAutoBrightness=false, blockScreenOn=false, lowPowerMode=false, boostScreenBrightness=false, dozeScreenBrightness=-1, dozeScreenState=UNKNOWN
+  mPendingRequestChangedLocked=false
+  mPendingWaitForNegativeProximityLocked=false
+  mPendingUpdatePowerStateLocked=false
+
+Display Power Controller Configuration:
+  mScreenBrightnessDozeConfig=1
+  mScreenBrightnessDimConfig=10
+  mScreenBrightnessDarkConfig=1
+  mScreenBrightnessRangeMinimum=1
+  mScreenBrightnessRangeMaximum=255
+  mUseSoftwareAutoBrightnessConfig=false
+  mAllowAutoBrightnessWhileDozingConfig=false
+  mColorFadeFadesConfig=false
+
+Display Power Controller Thread State:
+  mPowerRequest=policy=BRIGHT, useProximitySensor=false, screenBrightness=50, screenAutoBrightnessAdjustment=0.0, brightnessSetByUser=true, useAutoBrightness=false, blockScreenOn=false, lowPowerMode=false, boostScreenBrightness=false, dozeScreenBrightness=-1, dozeScreenState=UNKNOWN
+  mWaitingForNegativeProximity=false
+  mProximitySensor=null
+  mProximitySensorEnabled=false
+  mProximityThreshold=0.0
+  mProximity=Unknown
+  mPendingProximity=Unknown
+  mPendingProximityDebounceTime=-1 (263114 ms ago)
+  mScreenOffBecauseOfProximity=false
+  mAppliedAutoBrightness=false
+  mAppliedDimming=false
+  mAppliedLowPower=false
+  mPendingScreenOnUnblocker=null
+  mPendingScreenOff=false
+  mReportedToPolicy=REPORTED_TO_POLICY_SCREEN_ON
+  mScreenBrightnessRampAnimator.isAnimating()=false
+  mColorFadeOnAnimator.isStarted()=false
+  mColorFadeOffAnimator.isStarted()=false
+
+Display Power State:
+  mScreenState=ON
+  mScreenBrightness=50
+  mScreenReady=true
+  mScreenUpdatePending=false
+  mColorFadePrepared=false
+  mColorFadeLevel=1.0
+  mColorFadeReady=true
+  mColorFadeDrawPending=false
+
+Photonic Modulator State:
+  mPendingState=ON
+  mPendingBacklight=50
+  mActualState=ON
+  mActualBacklight=50
+  mStateChangeInProgress=false
+  mBacklightChangeInProgress=false
+
+Color Fade State:
+  mPrepared=false
+  mMode=0
+  mDisplayLayerStack=0
+  mDisplayWidth=0
+  mDisplayHeight=0
+  mSurfaceVisible=false
+  mSurfaceAlpha=0.0
+➜  ~ adb shell pm list features
+adb shell getprop ro.build.characteristics
+feature:reqGlEsVersion=0x20000
+feature:android.hardware.bluetooth
+feature:android.hardware.bluetooth_le
+feature:android.hardware.camera
+feature:android.hardware.camera.any
+feature:android.hardware.ethernet
+feature:android.hardware.faketouch
+feature:android.hardware.microphone
+feature:android.hardware.screen.landscape
+feature:android.hardware.touchscreen
+feature:android.hardware.usb.accessory
+feature:android.hardware.usb.host
+feature:android.hardware.wifi
+feature:android.hardware.wifi.direct
+feature:android.software.app_widgets
+feature:android.software.backup
+feature:android.software.device_admin
+feature:android.software.home_screen
+feature:android.software.voice_recognizers
+feature:android.software.webview
+tablet,nosdcard

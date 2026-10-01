@@ -1,0 +1,25 @@
+TIME: 2026-10-01T10:31:33.553031+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "for p in ro.build.version.release ro.build.version.sdk ro.build.version.security_patch ro.build.display.id ro.build.description ro.build.type ro.build.characteristics ro.product.manufacturer ro.product.brand ro.product.model ro.product.name ro.product.device ro.product.board ro.hardware ro.board.platform ro.product.cpu.abi ro.product.cpu.abi2 ro.product.cpu.abilist ro.product.cpu.abilist32 ro.product.cpu.abilist64 ro.config.low_ram; do printf \"%s=\" \"$p\"; getprop \"$p\"; done"]
+EXIT: 0
+
+ro.build.version.release=6.0.1
+ro.build.version.sdk=23
+ro.build.version.security_patch=2016-10-05
+ro.build.display.id=M4B30Z dev-keys
+ro.build.description=full_j6headunit-user 6.0.1 M4B30Z 228 dev-keys
+ro.build.type=user
+ro.build.characteristics=tablet,nosdcard
+ro.product.manufacturer=GuangDong_YF_Technology_Co_Ltd
+ro.product.brand=HeadUnit
+ro.product.model=IHU01
+ro.product.name=full_j6headunit
+ro.product.device=j6headunit
+ro.product.board=j6headunit
+ro.hardware=j6headunitboard
+ro.board.platform=j6headunit
+ro.product.cpu.abi=armeabi-v7a
+ro.product.cpu.abi2=armeabi
+ro.product.cpu.abilist=armeabi-v7a,armeabi
+ro.product.cpu.abilist32=armeabi-v7a,armeabi
+ro.product.cpu.abilist64=
+ro.config.low_ram=

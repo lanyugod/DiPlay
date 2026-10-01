@@ -1,0 +1,7 @@
+TIME: 2026-10-01T10:31:34.322615+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "id; getenforce; uname -a"]
+EXIT: 0
+
+uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats)
+Disabled
+Linux localhost 4.4.45 #1 SMP PREEMPT Fri Jan 22 23:20:35 CST 2021 armv7l

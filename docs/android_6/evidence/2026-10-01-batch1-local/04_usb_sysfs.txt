@@ -1,0 +1,123 @@
+TIME: 2026-10-01T10:31:37.170710+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "for d in /sys/bus/usb/devices/*; do\n if [ -f \"$d/idVendor\" ]; then\n printf \"\\nDEVICE %s\\n\" \"$d\"\n for f in idVendor idProduct bNumConfigurations bConfigurationValue speed; do\n if [ -f \"$d/$f\" ]; then printf \"%s=\" \"$f\"; cat \"$d/$f\"; fi\n done\n fi\n if [ -f \"$d/bInterfaceClass\" ]; then\n printf \"\\nINTERFACE %s\\n\" \"$d\"\n for f in bInterfaceNumber bAlternateSetting bInterfaceClass bInterfaceSubClass bInterfaceProtocol; do\n if [ -f \"$d/$f\" ]; then printf \"%s=\" \"$f\"; cat \"$d/$f\"; fi\n done\n fi\n done"]
+EXIT: 0
+
+
+INTERFACE /sys/bus/usb/devices/1-0:1.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=09
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+DEVICE /sys/bus/usb/devices/1-1
+idVendor=05ac
+idProduct=12a8
+bNumConfigurations=4
+bConfigurationValue=2
+speed=480
+
+INTERFACE /sys/bus/usb/devices/1-1:2.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=01
+bInterfaceSubClass=01
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/1-1:2.1
+bInterfaceNumber=01
+bAlternateSetting= 0
+bInterfaceClass=01
+bInterfaceSubClass=02
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/1-1:2.2
+bInterfaceNumber=02
+bAlternateSetting= 0
+bInterfaceClass=03
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/2-0:1.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=09
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/3-0:1.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=09
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+DEVICE /sys/bus/usb/devices/3-1
+idVendor=1bc7
+idProduct=1225
+bNumConfigurations=1
+bConfigurationValue=1
+speed=480
+
+INTERFACE /sys/bus/usb/devices/3-1:1.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=02
+bInterfaceSubClass=06
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/3-1:1.1
+bInterfaceNumber=01
+bAlternateSetting= 1
+bInterfaceClass=0a
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+INTERFACE /sys/bus/usb/devices/3-1:1.2
+bInterfaceNumber=02
+bAlternateSetting= 0
+bInterfaceClass=ff
+bInterfaceSubClass=ff
+bInterfaceProtocol=ff
+
+INTERFACE /sys/bus/usb/devices/3-1:1.3
+bInterfaceNumber=03
+bAlternateSetting= 0
+bInterfaceClass=ff
+bInterfaceSubClass=42
+bInterfaceProtocol=01
+
+INTERFACE /sys/bus/usb/devices/4-0:1.0
+bInterfaceNumber=00
+bAlternateSetting= 0
+bInterfaceClass=09
+bInterfaceSubClass=00
+bInterfaceProtocol=00
+
+DEVICE /sys/bus/usb/devices/usb1
+idVendor=1d6b
+idProduct=0002
+bNumConfigurations=1
+bConfigurationValue=1
+speed=480
+
+DEVICE /sys/bus/usb/devices/usb2
+idVendor=1d6b
+idProduct=0003
+bNumConfigurations=1
+bConfigurationValue=1
+speed=5000
+
+DEVICE /sys/bus/usb/devices/usb3
+idVendor=1d6b
+idProduct=0002
+bNumConfigurations=1
+bConfigurationValue=1
+speed=480
+
+DEVICE /sys/bus/usb/devices/usb4
+idVendor=1d6b
+idProduct=0003
+bNumConfigurations=1
+bConfigurationValue=1
+speed=5000

@@ -1,0 +1,157 @@
+TIME: 2026-10-01T10:38:25.405709+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "for f in /system/etc/audio_policy.conf /system/etc/audio_policy_configuration.xml /vendor/etc/audio_policy.conf /vendor/etc/audio_policy_configuration.xml; do\n if [ -f \"$f\" ]; then printf \"\\nFILE %s\\n\" \"$f\"; cat \"$f\"; fi\n done"]
+EXIT: 0
+
+
+FILE /system/etc/audio_policy.conf
+# Global configuration section: lists input and output devices always present on the device
+# as well as the output device selected by default.
+# Devices are designated by a string that corresponds to the enum in audio.h
+
+global_configuration {
+  attached_output_devices AUDIO_DEVICE_OUT_SPEAKER
+  default_output_device AUDIO_DEVICE_OUT_SPEAKER
+  attached_input_devices AUDIO_DEVICE_IN_BUILTIN_MIC|AUDIO_DEVICE_IN_LINE
+}
+
+# audio hardware module section: contains descriptors for all audio hw modules present on the
+# device. Each hw module node is named after the corresponding hw module library base name.
+# For instance, "primary" corresponds to audio.primary.<device>.so.
+# The "primary" module is mandatory and must include at least one output with
+# AUDIO_OUTPUT_FLAG_PRIMARY flag.
+# Each module descriptor contains one or more output profile descriptors and zero or more
+# input profile descriptors. Each profile lists all the parameters supported by a given output
+# or input stream category.
+# The "channel_masks", "formats", "devices" and "flags" are specified using strings corresponding
+# to enums in audio.h and audio_policy.h. They are concatenated by use of "|" without space or "\n".
+
+audio_hw_modules {
+  primary {
+    outputs {
+      primary {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER|AUDIO_DEVICE_OUT_WIRED_HEADSET|AUDIO_DEVICE_OUT_WIRED_HEADPHONE
+        flags AUDIO_OUTPUT_FLAG_PRIMARY
+      }
+      rse1 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_RSE1
+      }
+      rse2 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_RSE2
+      }
+      prompt0 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_PROMPT0
+      }
+      prompt1 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_PROMPT1
+      }
+      prompt2 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_PROMPT2
+      }
+      chime0 {
+        sampling_rates 48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER
+        flags AUDIO_OUTPUT_FLAG_CHIME0
+      }
+    }
+  }
+  
+  record {
+    inputs {
+      record {
+        sampling_rates 16000
+        channel_masks AUDIO_CHANNEL_IN_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_BUILTIN_MIC
+      }
+    }
+  }
+
+  jamr3 {
+    inputs {
+      jamr3_in {
+        sampling_rates 8000|11025|16000|22050|32000|44100|48000
+        channel_masks AUDIO_CHANNEL_IN_MONO|AUDIO_CHANNEL_IN_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_LINE
+      }
+    }
+    outputs {
+      primary {
+        sampling_rates 44100
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_SPEAKER|AUDIO_DEVICE_OUT_WIRED_HEADSET|AUDIO_DEVICE_OUT_WIRED_HEADPHONE
+        flags AUDIO_OUTPUT_FLAG_RSE1
+      }
+    }
+  }
+  
+  a2dp {
+    outputs {
+      a2dp {
+        sampling_rates 44100
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_ALL_A2DP
+      }
+    }
+    inputs {
+      a2dp {
+        sampling_rates 44100|48000
+        channel_masks AUDIO_CHANNEL_IN_MONO|AUDIO_CHANNEL_IN_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_BLUETOOTH_A2DP
+      }
+    }
+  }
+  r_submix {
+    outputs {
+      r_submix {
+        sampling_rates 44100|48000
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_REMOTE_SUBMIX
+      }
+      multichannel {
+        sampling_rates 44100|48000
+        channel_masks AUDIO_CHANNEL_OUT_5POINT1
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_REMOTE_SUBMIX
+        flags AUDIO_OUTPUT_FLAG_DIRECT
+      }
+    }
+    inputs {
+      r_submix {
+        sampling_rates 44100|48000
+        channel_masks AUDIO_CHANNEL_IN_MONO|AUDIO_CHANNEL_IN_STEREO|AUDIO_CHANNEL_IN_5POINT1EMUL
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_REMOTE_SUBMIX
+      }
+    }
+  }
+}

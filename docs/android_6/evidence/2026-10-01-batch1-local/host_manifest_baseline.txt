@@ -1,0 +1,23 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.5.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: :mobile:checkDebugAarMetadata :mobile:processDebugMainManifest
+> Task :common:preBuild UP-TO-DATE
+> Task :shared:preBuild UP-TO-DATE
+> Task :common:preDebugBuild UP-TO-DATE
+> Task :shared:preDebugBuild UP-TO-DATE
+> Task :mobile:rejectBundledCredentials
+> Task :mobile:preBuild
+> Task :mobile:preDebugBuild
+> Task :common:extractDeepLinksDebug
+> Task :mobile:extractDeepLinksDebug
+> Task :shared:extractDeepLinksDebug
+> Task :common:writeDebugAarMetadata
+> Task :shared:writeDebugAarMetadata
+> Task :common:processDebugManifest
+> Task :shared:processDebugManifest
+> Task :mobile:checkDebugAarMetadata
+> Task :mobile:processDebugMainManifest
+
+BUILD SUCCESSFUL in 8s
+10 actionable tasks: 10 executed
+Configuration cache entry stored.

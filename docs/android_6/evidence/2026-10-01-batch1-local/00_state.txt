@@ -1,0 +1,5 @@
+TIME: 2026-10-01T10:31:33.538695+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "get-state"]
+EXIT: 0
+
+device

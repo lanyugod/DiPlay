@@ -1,0 +1,27 @@
+TIME: 2026-10-01T10:38:26.365633+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "pm list packages -f"]
+EXIT: 0
+
+package:/system/app/BaiduSyncService/BaiduSyncService.apk=com.baidu.xiaoduos.syncservice
+package:/system/app/DuerOSAutoHotelhaval/DuerOSAutoHotelhaval.apk=com.baidu.iov.dueros.hotel
+package:/system/app/DuerOSCar2Home/DuerOSCar2Home.apk=com.baidu.iov.dueros.car2home
+package:/system/app/DuerOSAutoFilmhaval/DuerOSAutoFilmhaval.apk=com.baidu.iov.dueros.film
+package:/system/app/DuerosMessageServer/DuerosMessageServer.apk=com.baidu.xiaoduos.messageserver
+package:/system/app/SecureApp/SecureApp.apk=com.baidu.bodyguard
+package:/system/app/DuerosSmartPakking/DuerosSmartPakking.apk=com.baidu.che.parking
+package:/system/app/DureosCarOsOta/DureosCarOsOta.apk=com.baidu.xiaoduos.update
+package:/system/app/DuerOSAutoHaval/DuerOSAutoHaval.apk=com.baidu.che.codriver
+package:/system/priv-app/BdPrivacy_bak/BdPrivacy.apk=com.baidu.privacy
+package:/system/app/DuerOSIoVaiapps/DuerOSIoVaiapps.apk=com.baidu.iov.aiapps
+package:/system/app/DuerosMediaLand/DuerosMediaLand.apk=com.baidu.car.radio
+package:/system/app/DuerOSDuTheme/DuerOSDuTheme.apk=com.baidu.car.theme
+package:/system/app/DuerosFaceOSarmeabi/DuerosFaceOSarmeabi.apk=com.baidu.iov.faceos
+package:/system/app/BaiduInput/BaiduInput.apk=com.baidu.input
+package:/system/priv-app/PackageInstaller/PackageInstaller.apk=com.android.packageinstaller
+package:/system/app/DuerosBaiduMapAuto/DuerosBaiduMapAuto.apk=com.baidu.naviauto
+package:/system/app/DuerOSVideoPlayer/DuerOSVideoPlayer.apk=com.baidu.iov.dueros.videoplayer
+package:/system/app/DuerOSAutohavalWaiMai/DuerOSAutohavalWaiMai.apk=com.baidu.iov.dueros.waimai
+package:/system/app/DuerOSActivate/DuerOSActivate.apk=com.baidu.iov.dueros.activate
+package:/system/app/CarLifeVehicle/CarLifeVehicle.apk=com.baidu.carlifevehicle
+package:/system/app/DuerOSSceneMode/DuerOSSceneMode.apk=com.baidu.che.scenemode
+package:/system/app/DuerosFeedBack/DuerosFeedBack.apk=com.baidu.iov.feedback

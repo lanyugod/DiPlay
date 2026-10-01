@@ -1,0 +1,390 @@
+TIME: 2026-10-01T10:38:25.341608+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "dumpsys media.audio_flinger"]
+EXIT: 0
+
+Library loudness_enhancer
+  Loudness Enhancer / The Android Open Source Project
+    UUID: fa415329-2034-4bea-b5dc-5b381c8d1e2c
+    TYPE: fe3199be-aed0-413f-87bb-11260eb63cf1
+    apiVersion: 00020000
+    flags: 00000008
+Library downmix
+  Multichannel Downmix To Stereo / The Android Open Source Project
+    UUID: 93f04452-e4fe-41cc-91f9-e475b6d1d69f
+    TYPE: 381e49cc-a858-4aa2-87f6-e8388e7601b2
+    apiVersion: 00020000
+    flags: 00000008
+Library visualizer
+  Visualizer / The Android Open Source Project
+    UUID: d069d9e0-8329-11df-9168-0002a5d5c51b
+    TYPE: e46b26a0-dddd-11db-8afd-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000008
+Library reverb
+  Insert Preset Reverb / NXP Software Ltd.
+    UUID: 172cdf00-a3bc-11df-a72f-0002a5d5c51b
+    TYPE: 47382d60-ddd8-11db-bf3a-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000048
+  Auxiliary Preset Reverb / NXP Software Ltd.
+    UUID: f29a1400-a3bb-11df-8ddc-0002a5d5c51b
+    TYPE: 47382d60-ddd8-11db-bf3a-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000001
+  Insert Environmental Reverb / NXP Software Ltd.
+    UUID: c7a511a0-a3bb-11df-860e-0002a5d5c51b
+    TYPE: c2e5d5f0-94bd-4763-9cac-4e234d06839e
+    apiVersion: 00020000
+    flags: 00000048
+  Auxiliary Environmental Reverb / NXP Software Ltd.
+    UUID: 4a387fc0-8ab3-11df-8bad-0002a5d5c51b
+    TYPE: c2e5d5f0-94bd-4763-9cac-4e234d06839e
+    apiVersion: 00020000
+    flags: 00000001
+Library bundle
+  Volume / NXP Software Ltd.
+    UUID: 119341a0-8469-11df-81f9-0002a5d5c51b
+    TYPE: 09e8ede0-ddde-11db-b4f6-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000050
+  Equalizer / NXP Software Ltd.
+    UUID: ce772f20-847d-11df-bb17-0002a5d5c51b
+    TYPE: 0bed4300-ddd6-11db-8f34-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000048
+  Virtualizer / NXP Software Ltd.
+    UUID: 1d4033c0-8557-11df-9f2d-0002a5d5c51b
+    TYPE: 37cc2c00-dddd-11db-8577-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000250
+  Dynamic Bass Boost / NXP Software Ltd.
+    UUID: 8631f300-72e2-11df-b57e-0002a5d5c51b
+    TYPE: 0634f220-ddd4-11db-a0fc-0002a5d5c51b
+    apiVersion: 00020000
+    flags: 00000248
+Clients:
+  pid: 195
+  pid: 1037
+  pid: 1796
+  pid: 2010
+Notification Clients:
+  pid: 195
+  pid: 520
+  pid: 1017
+  pid: 1027
+  pid: 1037
+  pid: 1339
+  pid: 1431
+  pid: 1462
+  pid: 1796
+  pid: 2010
+Global session refs:
+  session   pid count
+       21  1017     1
+       24  1037     1
+       25  1796     2
+       26  1796     1
+       32  1462     1
+       34  1796     1
+       38  2010     1
+       39  1796     1
+       42  1796     1
+Hardware status: 0
+Standby Time mSec: 3000
+
+Output thread 0xb4540000 type 0 (MIXER):
+  Thread name: AudioOut_2
+  I/O handle: 2
+  TID: 566
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1634673
+  Total writes: 0
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb607d000
+  Mixer buffer: 0xb45d9000
+  Effect buffer: 0xb45c7000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a4150 flags 0x2 (PRIMARY)
+  Thread throttle time (msecs): 0
+  AudioMixer tracks: 0x00000000
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  0 Tracks
+  0 Effect Chains
+
+Output thread 0xb4300000 type 0 (MIXER):
+  Thread name: AudioOut_4
+  I/O handle: 4
+  TID: 567
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1592966
+  Total writes: 75
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb45c9000
+  Mixer buffer: 0xb45fc000
+  Effect buffer: 0xb45cb000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a4188 flags 0x800 (0x800)
+  Thread throttle time (msecs): 90
+  AudioMixer tracks: 0x00000003
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  2 Tracks of which 0 are active
+    Name Active Client Type      Fmt Chn mask Session fCount S F SRate  L dB  R dB    Server Main buf  Aux Buf Flags UndFrmCnt
+       0     no   1037    3 00000001 00000003      24  15080 I 0 44100     0     0  00000000 0xb45c9000 0x0 0x000         0 
+       1     no   1796    3 00000001 00000003      39   8064 S 1 44100  -inf  -inf  00001F80 0xb45c9000 0x0 0x600         0 
+  0 Effect Chains
+
+Output thread 0xb4180000 type 0 (MIXER):
+  Thread name: AudioOut_6
+  I/O handle: 6
+  TID: 568
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1634675
+  Total writes: 0
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb45cd000
+  Mixer buffer: 0xb43ed000
+  Effect buffer: 0xb45cf000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a4380 flags 0x1000 (0x1000)
+  Thread throttle time (msecs): 0
+  AudioMixer tracks: 0x00000000
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  0 Tracks
+  0 Effect Chains
+
+Output thread 0xb4000000 type 0 (MIXER):
+  Thread name: AudioOut_8
+  I/O handle: 8
+  TID: 574
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1587255
+  Total writes: 305
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb45d1000
+  Mixer buffer: 0xb43f2000
+  Effect buffer: 0xb45d3000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a43b8 flags 0x2000 (0x2000)
+  Thread throttle time (msecs): 217
+  AudioMixer tracks: 0x00000003
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  2 Tracks of which 0 are active
+    Name Active Client Type      Fmt Chn mask Session fCount S F SRate  L dB  R dB    Server Main buf  Aux Buf Flags UndFrmCnt
+       1     no    195   12 00000001 00000001      25  24576 S 1 48000     0     0  00004012 0xb45d1000 0x0 0x601      2030 
+       0     no   1796   12 00000001 00000001      34   2744 I 1 16000  -inf  -inf  0000C080 0xb45d1000 0x0 0x601     55431 
+  0 Effect Chains
+
+Output thread 0xb3e40000 type 0 (MIXER):
+  Thread name: AudioOut_A
+  I/O handle: 10
+  TID: 575
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1634676
+  Total writes: 0
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb45d5000
+  Mixer buffer: 0xb3ede000
+  Effect buffer: 0xb45d7000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a43f0 flags 0x4000 (0x4000)
+  Thread throttle time (msecs): 0
+  AudioMixer tracks: 0x00000000
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  0 Tracks
+  0 Effect Chains
+
+Output thread 0xb3c80000 type 0 (MIXER):
+  Thread name: AudioOut_C
+  I/O handle: 12
+  TID: 577
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1634677
+  Total writes: 0
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb3ee2000
+  Mixer buffer: 0xb3ef6000
+  Effect buffer: 0xb3ee4000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a4428 flags 0x8000 (0x8000)
+  Thread throttle time (msecs): 0
+  AudioMixer tracks: 0x00000001
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  1 Tracks of which 0 are active
+    Name Active Client Type      Fmt Chn mask Session fCount S F SRate  L dB  R dB    Server Main buf  Aux Buf Flags UndFrmCnt
+       0     no   2010   10 00000001 00000001      38   2744 I 0 16000     0     0  00000000 0xb3ee2000 0x0 0x000         0 
+  0 Effect Chains
+
+Output thread 0xb3ac0000 type 0 (MIXER):
+  Thread name: AudioOut_E
+  I/O handle: 14
+  TID: 592
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 2048
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 8192 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0 (NONE)
+  Audio source: 0 (default)
+  Normal frame count: 2048
+  Last write occurred (msecs): 1634678
+  Total writes: 0
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Sink buffer : 0xb3ee6000
+  Mixer buffer: 0xb3efb000
+  Effect buffer: 0xb3ee8000
+  Fast track availMask=0xfe
+  AudioStreamOut: 0xb60a4620 flags 0x40000 (0x40000)
+  Thread throttle time (msecs): 0
+  AudioMixer tracks: 0x00000000
+  FastMixer not initialized
+  Stream volumes in dB: 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0
+  Normal mixer raw underrun counters: partial=0 empty=0
+  0 Tracks
+  0 Effect Chains
+
+Input thread 0xafd40000:
+  Thread name: AudioIn_2B
+  I/O handle: 43
+  TID: 4716
+  Standby: no
+  Sample rate: 16000 Hz
+  HAL frame count: 320
+  HAL format: 0x1 (pcm16)
+  HAL buffer size: 1280 bytes
+  Channel count: 2
+  Channel mask: 0x0000000c (left, right)
+  Format: 0x1 (pcm16)
+  Frame size: 4 bytes
+  Pending config events: none
+  Output device: 0x2 (SPEAKER)
+  Input device: 0x80000004 (BUILTIN_MIC)
+  Audio source: 1 (mic)
+  Fast capture thread: no
+  Fast track available: no
+  FastCapture not initialized
+  1 Tracks of which 1 are active
+    Active Client Fmt Chn mask Session S   Server fCount SRate
+       yes   1796   1 00000010      42 6 00A25300  80000 16000
+  0 Effect Chains
+
+Reroute submix audio module:
+ route[0] rate in=0 out=0, addr=[]
+ route[1] rate in=0 out=0, addr=[]
+ route[2] rate in=0 out=0, addr=[]
+ route[3] rate in=0 out=0, addr=[]
+ route[4] rate in=0 out=0, addr=[]
+ route[5] rate in=0 out=0, addr=[]
+ route[6] rate in=0 out=0, addr=[]
+ route[7] rate in=0 out=0, addr=[]
+ route[8] rate in=0 out=0, addr=[]
+ route[9] rate in=0 out=0, addr=[]

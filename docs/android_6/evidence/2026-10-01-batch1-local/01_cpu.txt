@@ -1,0 +1,27 @@
+TIME: 2026-10-01T10:31:34.421224+08:00
+COMMAND: ["/opt/homebrew/bin/adb", "-s", "192.168.43.1:5555", "shell", "cat /proc/cpuinfo"]
+EXIT: 0
+
+processor	: 0
+model name	: ARMv7 Processor rev 2 (v7l)
+BogoMIPS	: 15.68
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x2
+CPU part	: 0xc0f
+CPU revision	: 2
+
+processor	: 1
+model name	: ARMv7 Processor rev 2 (v7l)
+BogoMIPS	: 15.68
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x2
+CPU part	: 0xc0f
+CPU revision	: 2
+
+Hardware	: Generic DRA74X (Flattened Device Tree)
+Revision	: 0000
+Serial		: 0000000000000000
