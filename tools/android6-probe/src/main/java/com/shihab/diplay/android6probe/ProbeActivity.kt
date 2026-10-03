@@ -51,7 +51,8 @@ class ProbeActivity : Activity(), SurfaceHolder.Callback {
     }
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(12, 12, 12, 12) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(12, 12, 12, 12) }
+        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         fun button(title: String, action: () -> Unit) {
             column.addView(Button(this).apply { text = title; setOnClickListener { runCatching(action).onFailure { log("Test failed: ${it.message}") } } })
         }
@@ -82,11 +83,14 @@ class ProbeActivity : Activity(), SurfaceHolder.Callback {
             if (consent != null) startActivityForResult(consent, 4) else startVpn()
         }
         button("G4 释放VPN") { stopVpn() }
+        root.addView(ScrollView(this).apply { addView(column) }, LinearLayout.LayoutParams(0, -1, 0.44f))
+        val results = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(12, 0, 0, 0) }
         video = SurfaceView(this).also { it.holder.addCallback(this) }
-        column.addView(video, LinearLayout.LayoutParams(-1, 220))
+        results.addView(video, LinearLayout.LayoutParams(-1, 0, 0.6f))
         output = TextView(this).apply { textSize = 12f; setTextIsSelectable(true) }
-        column.addView(output)
-        setContentView(ScrollView(this).apply { addView(column) })
+        results.addView(ScrollView(this).apply { addView(output) }, LinearLayout.LayoutParams(-1, 0, 0.4f))
+        root.addView(results, LinearLayout.LayoutParams(0, -1, 0.56f))
+        setContentView(root)
         val filter = IntentFilter(permissionAction).apply { addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED); addAction(UsbManager.ACTION_USB_DEVICE_DETACHED) }
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED) else registerReceiver(receiver, filter)
         log("uid=${Process.myUid()} model=${Build.MODEL} device=${Build.DEVICE} API=${Build.VERSION.SDK_INT}; 未启动任何测试")
@@ -236,7 +240,7 @@ class ProbeActivity : Activity(), SurfaceHolder.Callback {
     override fun surfaceDestroyed(holder: SurfaceHolder) { surfaceGeneration++; log("Surface destroyed generation=$surfaceGeneration") }
     private fun log(message: String) {
         Log.i("DiPlay-API23-Probe", message)
-        runOnUiThread { if (!isDestroyed) { output.append("$message\n"); if (output.text.length > 30000) output.text = output.text.takeLast(24000) } }
+        runOnUiThread { if (!isDestroyed) { output.append("$message\n"); if (output.text.length > 12000) output.text = output.text.takeLast(10000) } }
     }
     override fun onDestroy() {
         unregisterReceiver(receiver); stopVideo(); stopVpn()

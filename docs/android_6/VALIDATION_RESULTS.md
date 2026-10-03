@@ -1,5 +1,9 @@
 # H6 Android 6：验证结果与后续模板
 
+## 2026-10-03 实车探针进度
+
+已按设备所有者驻车授权建立可恢复临时窗口（整包停用落盘后重启）；探针与主体基础包安装/冷启动成功，并完成卸载。普通UID USB open及主动切换后CDC NCM描述符通过；配置切换仍受当前USB音频/HID占用阻塞，queue未进入。TI 720p样本循环10分钟、短测试音可听、一次探针桌面Surface恢复通过。普通VPN授权窗口缺失；额外批准ACTIVATE_VPN临时授权后无路由TUN建立/释放成功，授权已撤销。主体补齐VPN缺失错误处理；source-only缺CarPlay认证，完整会话未开始。测试包均卸载，安全包/组件恢复DEFAULT，最终重启核验完成：两服务PID1321、system_server PID532 hasBound=true，包/组件DEFAULT=0、/system只读、无测试包和TUN残留。详见[临时窗口与适配实测](SECURITY_PROBE_WINDOW_2026-10-03.md)。下文保留2026-10-01历史采集与模板。
+
 ## 2026-10-01 实际采集结论
 
 本节是本轮有效结果；后面的空模板保留供后续补采，不代表本次尚未采集。配套 [详细设计](DETAILED_DESIGN.md) 与 [原分步清单](ADB_VALIDATION.md)。

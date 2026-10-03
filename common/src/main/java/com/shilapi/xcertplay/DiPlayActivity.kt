@@ -580,8 +580,9 @@ class DiPlayActivity : ComponentActivity() {
         val preview = AudioChannelPreview { channel ->
             toast(getString(R.string.contrib_audio_home_channel_preview_unavailable, channel))
         }
-        val labels = (0..10).map(Int::toString).toTypedArray()
-        var selection = current.coerceIn(0, 10)
+        val channels = AirPlayPersistence.AUDIO_CHANNELS
+        val labels = channels.map(Int::toString).toTypedArray()
+        var selection = current.coerceIn(channels.first, channels.last)
         AlertDialog.Builder(this).setTitle(title)
             .setSingleChoiceItems(labels, selection) { _, which ->
                 selection = which
@@ -961,10 +962,11 @@ class DiPlayActivity : ComponentActivity() {
             val result = runCatching {
                 val report = buildString {
                     appendLine("DiPlay ${version()} · private beta diagnostic report")
+                    appendLine(UpstreamSyncInfo.report())
                     appendLine("Android ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT}")
                     appendLine(H6CompatibilityProfile.summary(appContext))
                     appendLine("Head unit: ${Build.MANUFACTURER} ${Build.MODEL}")
-                    appendLine("Connection: ${if (AirPlayPersistence.loadWirelessEnabled(appContext)) "wireless" else "USB"}")
+                    appendLine("Connection: ${if (H6CompatibilityProfile.wirelessEnabled(appContext)) "wireless" else "USB"}")
                     appendLine("Authentication: local experimental beta identity; no remote fallback")
                     appendLine("CarPlay setup: ${if (setupError == null) "ready" else "authentication unavailable"}")
                     appendLine("Saved video preference (may differ from active session): ${if (AirPlayPersistence.loadHevcEnabled(appContext)) "HEVC" else "H.264"}; ${AirPlayPersistence.loadFps(appContext)} fps")
@@ -975,6 +977,11 @@ class DiPlayActivity : ComponentActivity() {
                     appendLine()
                     appendLine("--- Last display negotiation (timestamps distinguish it from current settings) ---")
                     appendLine(DisplayDiagnosticSnapshot.report(appContext))
+                    appendLine()
+                    appendLine("--- Last received boot and app-launch result ---")
+                    appendLine(StartupDiagnosticSnapshot.report(appContext))
+                    appendLine("Startup settings: openAfterBoot=${AirPlayPersistence.loadAutoStartOnBoot(appContext)} " +
+                        "connectWhenOpened=${DiPlayPreferences.autoConnect(appContext)}")
                     appendLine()
                     for (name in SessionLogFile.REPORT_NAMES) {
                         val file = File(appContext.filesDir, "logs/$name")

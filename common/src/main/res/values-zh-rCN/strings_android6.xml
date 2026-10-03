@@ -1,4 +1,6 @@
 <resources>
+    <string name="retry_usb_connection">重试 USB 连接</string>
+    <string name="usb_connection_unavailable">USB 配置或接口暂不可用。请退出原车投屏，拔插 iPhone 后点击重试。若仍失败，可能是固件仍占用 USB 音频/HID 接口。</string>
     <string name="compatibility_profile">兼容配置</string>
     <string name="h6_profile">哈弗 H6 Android 6</string>
     <string name="h6_phase_one">一期：有线、H.264 / 30fps、单屏；麦克风及车辆联动关闭。</string>

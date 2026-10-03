@@ -42,13 +42,19 @@ object IphoneCarPlayConfiguration {
 
     /** A failed setter is only recoverable when GET_CONFIGURATION proves the target is active. */
     fun select(connection: UsbDeviceConnection, configuration: UsbConfiguration) {
-        if (connection.setConfiguration(configuration)) return
+        select(configuration.id, { connection.setConfiguration(configuration) }) { active ->
+            connection.controlTransfer(0x80, 8, 0, 0, active, active.size, 1000)
+        }
+    }
+
+    internal fun select(requestedId: Int, set: () -> Boolean, get: (ByteArray) -> Int) {
+        if (set()) return
         val active = ByteArray(1)
-        val length = connection.controlTransfer(0x80, 8, 0, 0, active, active.size, 1000)
+        val length = get(active)
         val actual = if (length == 1) active[0].toInt() and 255 else null
-        Log.w(TAG, "setConfiguration failed requested=${configuration.id} active=$actual status=$length")
-        if (actual != configuration.id) throw IphoneUsbException.Protocol(
-            "Could not select CarPlay USB configuration ${configuration.id}; active=$actual. Exit the original projection app and retry.",
+        Log.w(TAG, "setConfiguration failed requested=$requestedId active=$actual status=$length")
+        if (actual != requestedId) throw IphoneUsbException.ResourceUnavailable(
+            "Could not select CarPlay USB configuration $requestedId; active=$actual. USB audio/HID or another projection app may own the device. Exit the original projection app and reconnect the cable.",
         )
     }
 

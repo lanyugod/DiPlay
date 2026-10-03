@@ -2,17 +2,24 @@ package com.shilapi.xcertplay
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import com.shilapi.xcertplay.media.AudioFocusCompat
 import android.media.AudioManager
+import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import com.shilapi.xcertplay.airplay.CarPlayMediaButton
+import com.shilapi.xcertplay.media.CarPlayNowPlaying
 import com.shilapi.xcertplay.orchestration.CarPlayController
+import java.util.concurrent.Executors
+import java.util.concurrent.Executor
 
 /**
  * Steering-wheel and other hardware media buttons for CarPlay.
@@ -28,6 +35,16 @@ internal object CarPlayMediaKeys {
         PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val artworkQueue = NowPlayingArtworkQueue(
+        worker = Executors.newSingleThreadExecutor { task ->
+            Thread(task, "diplay-now-playing-artwork").apply { isDaemon = true }
+        },
+        main = Executor { mainHandler.post(it) },
+        decode = ::decodeArtwork,
+        publish = ::onArtworkDecoded,
+        discard = Bitmap::recycle,
+    )
+    private var artworkOwner: Any? = null
     @Volatile private var controller: CarPlayController? = null
     private var session: MediaSession? = null
     private var focusRequest: AudioFocusCompat? = null
@@ -37,18 +54,27 @@ internal object CarPlayMediaKeys {
     private var focusChange: (Int) -> Unit = {}
     @Volatile private var mediaFocusToken: Any? = null
 
+    private var mediaAudioActive = false
+    private var nowPlaying = CarPlayNowPlaying()
+    private var elapsedUpdatedAt = 0L
+    private var artwork: Bitmap? = null
+    private val artworkCache = LinkedHashMap<Int, Bitmap?>()
+
     @Synchronized
     fun attach(context: Context, next: CarPlayController,
         h6FocusPolicy: Boolean = false, onFocusChange: (Int) -> Unit = {}, mediaFocusToken: Any? = null) {
-        if (controller !== next) releaseLocked()
+        if (controller !== next) {
+            releaseLocked()
+            artworkOwner = artworkQueue.newSession()
+        }
         appContext = context.applicationContext
         controller = next
         this.h6FocusPolicy = h6FocusPolicy
         focusChange = onFocusChange
         this.mediaFocusToken = mediaFocusToken
-        next.playbackListener = { playing ->
-            synchronized(this) { if (controller === next) onIphonePlaying(playing) }
-        }
+        next.playbackListener = { playing -> onIphonePlaying(next, playing) }
+        next.nowPlayingListener = { update -> onNowPlayingChanged(next, update) }
+        next.artworkListener = { id, bytes -> onArtworkChanged(next, id, bytes) }
     }
 
     /** Ends key handling for [expected]; a newer controller's state is left alone. */
@@ -56,6 +82,8 @@ internal object CarPlayMediaKeys {
     fun detach(expected: CarPlayController?) {
         if (expected == null || controller !== expected) return
         expected.playbackListener = null
+        expected.nowPlayingListener = null
+        expected.artworkListener = null
         controller = null
         releaseLocked()
     }
@@ -71,8 +99,55 @@ internal object CarPlayMediaKeys {
 
     /** The iPhone started or stopped playing; may run on any thread. */
     fun onIphonePlaying(playing: Boolean) {
-        val expected = synchronized(this) { controller }
-        if (playing) mainHandler.post { synchronized(this) { if (controller === expected) regainFocusLocked() } }
+        val expected = synchronized(this) { controller } ?: return
+        onIphonePlaying(expected, playing)
+    }
+
+    private fun onIphonePlaying(expected: CarPlayController, playing: Boolean) {
+        if (playing) mainHandler.post {
+            synchronized(this) {
+                if (controller === expected) regainFocusLocked()
+            }
+        }
+    }
+
+    /** Publishes the iPhone's retained metadata through Android's system media session. */
+    private fun onNowPlayingChanged(expected: CarPlayController, update: CarPlayNowPlaying) {
+        mainHandler.post {
+            synchronized(this) {
+                if (controller !== expected) return@synchronized
+                if (nowPlaying.artworkTransferId != update.artworkTransferId) {
+                    artwork = update.artworkTransferId?.let { id ->
+                        if (artworkCache.containsKey(id)) artworkCache[id] else null
+                    }
+                }
+                if (nowPlaying.elapsedMillis != update.elapsedMillis) elapsedUpdatedAt = SystemClock.elapsedRealtime()
+                nowPlaying = update
+                session?.setMetadata(androidMetadata(update, artwork))
+                publishPlaybackStateLocked()
+            }
+        }
+    }
+
+    @Synchronized
+    private fun onArtworkChanged(expected: CarPlayController, id: Int, bytes: ByteArray) {
+        if (controller !== expected) return
+        artworkOwner?.let { artworkQueue.submit(it, id, bytes) }
+    }
+
+    @Synchronized
+    private fun onArtworkDecoded(expected: Any, id: Int, decoded: Bitmap?) {
+        if (artworkOwner !== expected) {
+            decoded?.recycle()
+            return
+        }
+        artworkCache.remove(id)
+        artworkCache[id] = decoded
+        while (artworkCache.size > MAX_CACHED_ARTWORK) artworkCache.remove(artworkCache.keys.first())
+        if (nowPlaying.artworkTransferId == id) {
+            artwork = decoded
+            session?.setMetadata(androidMetadata(nowPlaying, artwork))
+        }
     }
 
     // Another car app (its own Spotify, the radio) took audio focus and with it the steering-wheel
@@ -89,13 +164,9 @@ internal object CarPlayMediaKeys {
     private fun updateLocked(active: Boolean) {
         val context = appContext ?: return
         if (controller == null) return
+        mediaAudioActive = active
         if (active && session == null) start(context) else if (active) regainFocusLocked()
-        session?.setPlaybackState(
-            PlaybackState.Builder()
-                .setActions(ACTIONS)
-                .setState(if (active) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
-                .build(),
-        )
+        publishPlaybackStateLocked()
     }
 
     private fun start(context: Context) {
@@ -121,22 +192,50 @@ internal object CarPlayMediaKeys {
         focusHeld = granted
         session = MediaSession(context, "DiPlay CarPlay").apply {
             setCallback(callback, mainHandler)
+            setMetadata(androidMetadata(nowPlaying, artwork))
             isActive = true
         }
         Log.i(TAG, "media keys active focusGranted=$granted")
     }
 
     private fun releaseLocked() {
+        artworkOwner = null
+        artworkQueue.clear()
         session?.let {
             it.isActive = false
             it.release()
         }
         session = null
+        mediaAudioActive = false
+        nowPlaying = CarPlayNowPlaying()
+        artwork = null
+        artworkCache.clear()
         focusRequest?.close()
         focusRequest = null
         focusHeld = false
         focusChange = {}
         mediaFocusToken = null
+    }
+
+    private fun publishPlaybackStateLocked() {
+        val playing = if (nowPlaying.elapsedMillis != null || nowPlaying.title != null) {
+            nowPlaying.playing
+        } else {
+            mediaAudioActive
+        }
+        session?.setPlaybackState(
+            PlaybackState.Builder()
+                .setActions(ACTIONS)
+                .setState(
+                    if (playing) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED,
+                    nowPlaying.elapsedMillis ?: PlaybackState.PLAYBACK_POSITION_UNKNOWN,
+                    if (playing) 1f else 0f,
+                    // The iPhone sends elapsed time only on play, pause or seek, so Android must
+                    // extrapolate from when it arrived, not from this republish.
+                    elapsedUpdatedAt,
+                )
+                .build(),
+        )
     }
 
     private fun send(index: Int, source: String) {
@@ -145,6 +244,55 @@ internal object CarPlayMediaKeys {
     }
 
     private val callback = CarPlayMediaCallback(::send)
+
+    internal fun androidMetadata(info: CarPlayNowPlaying, artwork: Bitmap? = null): MediaMetadata =
+        MediaMetadata.Builder().apply {
+            info.title?.let {
+                putString(MediaMetadata.METADATA_KEY_TITLE, it)
+                putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, it)
+            }
+            info.artist?.let {
+                putString(MediaMetadata.METADATA_KEY_ARTIST, it)
+                putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, it)
+            }
+            info.album?.let { putString(MediaMetadata.METADATA_KEY_ALBUM, it) }
+            info.durationMillis?.let { putLong(MediaMetadata.METADATA_KEY_DURATION, it) }
+            info.sourceApp?.let { putString(MediaMetadata.METADATA_KEY_DISPLAY_DESCRIPTION, it) }
+            artwork?.let {
+                putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, it)
+                putBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON, it)
+            }
+        }.build()
+
+    private fun decodeArtwork(bytes: ByteArray): Bitmap? {
+        if (bytes.isEmpty()) return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        if (bounds.outWidth !in 1..MAX_ARTWORK_SOURCE_DIMENSION ||
+            bounds.outHeight !in 1..MAX_ARTWORK_SOURCE_DIMENSION
+        ) return null
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > MAX_ARTWORK_DIMENSION * 2) sample *= 2
+        val decoded = BitmapFactory.decodeByteArray(
+            bytes,
+            0,
+            bytes.size,
+            BitmapFactory.Options().apply { inSampleSize = sample },
+        ) ?: return null
+        val largest = maxOf(decoded.width, decoded.height)
+        if (largest <= MAX_ARTWORK_DIMENSION) return decoded
+        val scale = MAX_ARTWORK_DIMENSION.toFloat() / largest
+        return Bitmap.createScaledBitmap(
+            decoded,
+            (decoded.width * scale).toInt().coerceAtLeast(1),
+            (decoded.height * scale).toInt().coerceAtLeast(1),
+            true,
+        ).also { scaled -> if (scaled !== decoded) decoded.recycle() }
+    }
+
+    private const val MAX_ARTWORK_DIMENSION = 384
+    private const val MAX_ARTWORK_SOURCE_DIMENSION = 8_192
+    private const val MAX_CACHED_ARTWORK = 4
 }
 
 /**

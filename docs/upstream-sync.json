@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/shihabal3amri/DiPlay",
+  "upstream_tag": "v0.2.10",
+  "upstream_commit": "3e43e25c55921bdf5149f5f92851acf202ed353a",
+  "previous_upstream_commit": "885dffb499d549fee5d0e848fc1314cad78c3efa",
+  "local_version": "0.2.10-h6",
+  "local_version_code": 29,
+  "sync_date": "2026-10-04",
+  "mode": "selective",
+  "minimum_android_api": 23,
+  "scope": [
+    "H6 wired CarPlay",
+    "H.264/30fps",
+    "single screen",
+    "music/navigation",
+    "Android media metadata/artwork",
+    "bounded diagnostics"
+  ],
+  "excluded": [
+    "BYD vehicle integration changes",
+    "multi-screen/dashboard/launcher map features",
+    "ADB/gear-dependent parked video",
+    "microphone uplink/call effects",
+    "location reporting",
+    "additional upstream locales"
+  ],
+  "reviewed_commits": [
+    {
+      "commit": "82bf357fdede2614a58030f899768c88c66494c2",
+      "subject": "Keep sending location after wireless CarPlay moves to Wi-Fi",
+      "disposition": "skipped",
+      "reason": "H6一期关闭车机位置上报；CarPlay手机导航画面与播报仍在范围内。"
+    },
+    {
+      "commit": "030bbc5d6180b99eae346f31ced5314eab4cd039",
+      "subject": "Keep location updates while another car app covers CarPlay",
+      "disposition": "skipped",
+      "reason": "H6一期关闭车机位置上报；CarPlay手机导航画面与播报仍在范围内。"
+    },
+    {
+      "commit": "c1195aa1d468a58881b771f879cccaa32fc5e7fa",
+      "subject": "Fix BYD head units not applying day/night mode to CarPlay",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "b9467457ddbd9f94501aace52da025042ffc02ae",
+      "subject": "Add audio stutter diagnostic timeline (#74)",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "842b6473e8c03081b9ed51e943ea82d8c5701b57",
+      "subject": "Recover rejected Lockdown host IDs (#75)",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "260a5a032319fbe0f05e968203063ec52e169796",
+      "subject": "Fallback from rejected hardware video decoders (#76)",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "1c72c0b6ef845912a73aba5190345b4cb5253068",
+      "subject": "Send location once a second on both links, also over USB",
+      "disposition": "skipped",
+      "reason": "H6一期关闭车机位置上报；CarPlay手机导航画面与播报仍在范围内。"
+    },
+    {
+      "commit": "a2527b1923954f39ad74b0201f8b06756fd93d51",
+      "subject": "Stop Wi-Fi location after Bluetooth stop request",
+      "disposition": "skipped",
+      "reason": "H6一期关闭车机位置上报；CarPlay手机导航画面与播报仍在范围内。"
+    },
+    {
+      "commit": "640001ff5002e5a4775ad89c6b19384693813aa2",
+      "subject": "Send wheel speed for tunnels (optional, ADB)",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "a802a86bd316a27c7138ff76d5b22afa392ffdb8",
+      "subject": "Merge pull request #48 from romanchukg-cloud/feat/location-over-wifi",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "66c3e30914697c9dee583ee90642e2ca70365188",
+      "subject": "Merge pull request #78 from romanchukg-cloud/feat/wheel-speed-tunnels",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "ed9b20ae76d0c30ebd5693b4f92b53f9da686125",
+      "subject": "Play iOS 27 video in car while parked (optional, ADB)",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "0b6c312d1c2e8cf44c2ffc5fb0cca9bd72397667",
+      "subject": "Never send null in video replies",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "49c160afe6aaaa9329e41332a597297eecf598ff",
+      "subject": "Report video the car cannot play instead of showing black",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "7e9281629947a142230bed430ecb1e643a16ed9b",
+      "subject": "Merge pull request #77 from romanchukg-cloud/feat/video-in-car",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "f2d06951b4e8114dbb62f551c12a32a845a3042f",
+      "subject": "Prepare DiPlay 0.2.8 release",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "56d5651b582be9578539bc20cb8a95f2d636d1f8",
+      "subject": "fix: restore extended audio channels and legacy navigation settings",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "9d90d06e0046f749e2f238f7ade0d6b5b46a701f",
+      "subject": "fix: keep CarPlay connected through surround-view window changes",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "4d3211b70c22dc4324ab54cc4f6ef08553e51962",
+      "subject": "docs: use English comments for audio channel routing",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "2e8335435d6230ad601be22ac04c09b5dbe6fad8",
+      "subject": "Add Ukrainian translation",
+      "disposition": "skipped",
+      "reason": "本轮保留现有语言，不同步以BYD/多屏新增界面为主的翻译。"
+    },
+    {
+      "commit": "75fc2fc65721bc3085d7fe4c07ca56fb62fba487",
+      "subject": "Add the Ukrainian edition of the website",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "da43081925547dc75bde5995bbf55a27c4e26cc5",
+      "subject": "Show the CarPlay song on the BYD dashboard",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "4a5a4298454bc607ae23593d817d37219ebaa30f",
+      "subject": "Show the dashboard map as a card on the centre screen",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "2f7d911460957ca2d1cb0b6f7dc1eef42955fe46",
+      "subject": "Add a CarPlay navigation widget",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "1ec0d1bde116a17440645aec4b209dc506a75efd",
+      "subject": "Show the dashboard map as a card on the centre screen",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "6e55da7115263307fb4754fa81d8568c3a47f0d0",
+      "subject": "Let other launchers show the live dashboard map",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "ca15460a9cac196ad57663535b90921eb6ff289b",
+      "subject": "Add DiPlay Home, a sample launcher with the live map and widgets",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "853edc6694697bb547440d782ffc5204f407f5d0",
+      "subject": "Leave the GPS course empty when its direction is unknown",
+      "disposition": "skipped",
+      "reason": "H6一期关闭车机位置上报；CarPlay手机导航画面与播报仍在范围内。"
+    },
+    {
+      "commit": "7eb4a3ffc6860b5a24c9a2f7e231fa330814b4d7",
+      "subject": "Fix full-screen recovery after connecting in a camera window",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "04294209449de38df4bb8e3affb18793e88bb82f",
+      "subject": "Merge pull request #71 from lpcheng1208/fix/byd-day-night-mode",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "0bcc77715f0116e1b8faf12ecd25c10ff4099bb5",
+      "subject": "Merge pull request #88 from lpcheng1208/fix/restore-navigation-audio-channels",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "0d21434883306a6273470439cdbea077ca2ab9c0",
+      "subject": "Merge pull request #89 from lpcheng1208/fix/keep-carplay-through-surround-view",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "b3ea0e54746dcc0f08ea1df7d7b7c1310e6546ba",
+      "subject": "Document merged CarPlay fixes for the next release announcement",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "712c44c067a020f762db388b1ea1126f7ed611d8",
+      "subject": "Merge remote-tracking branch 'origin/main' into fix/romanchuk-pr101",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "bedeaf30e4e5edbcb3142ea06874219c6cfd3c46",
+      "subject": "Merge branch 'fix/romanchuk-pr101' into fix/romanchuk-pr106",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "fd31793338d4e417c1f605fb7b7d5346580d85cb",
+      "subject": "Clear dashboard song state when the title is removed",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "53f2f5c2d79bb15442236ef4dbb26215bfd4ae5e",
+      "subject": "Expire cached navigation instructions without new metadata frames",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "ff0de58055037da91b12d66850281f15b6cbc28e",
+      "subject": "Merge remote-tracking branch 'origin/main' into fix/romanchuk-pr93",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "8efaad97506f16deb05415c284f7866e1be4c6df",
+      "subject": "Correct the Ukrainian Android audio stream range",
+      "disposition": "skipped",
+      "reason": "本轮保留现有语言，不同步以BYD/多屏新增界面为主的翻译。"
+    },
+    {
+      "commit": "9aa3448fdce1614fd2a850ddfb96e06e881bbf96",
+      "subject": "Merge current main while preserving display state and combining startup callbacks",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "d0226ace9673b85c25b5a2756b70827719417e85",
+      "subject": "Integrate current main and the song and navigation widget fixes",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "cd5ccb5dff0463ed4f89353c81e84910f5def772",
+      "subject": "Integrate the fixed centre map branch into the launcher stack",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "7c49036dd56c1d63ec6043d08d12999927567e52",
+      "subject": "Merge branch 'fix/romanchuk-pr107' into fix/romanchuk-pr108",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "042d85b85737d698baaf064a12531dfb88204528",
+      "subject": "Revoke existing launcher maps when sharing is disabled",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "596b914185f874761066d25ce2935f49c30bc78d",
+      "subject": "Use supported Home back navigation and check sample apps in CI",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "2f9402caaecc5057701ecfb1b5e6b3ff2c6b622d",
+      "subject": "Merge branch 'fix/romanchuk-pr107' into fix/romanchuk-pr108",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "63d99f50ec047a7c8bec50874de6a8c56b4db826",
+      "subject": "Handle and document map-sharing revocation in launcher clients",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "a364107d895e9448e91ff85cf57265c917c642e9",
+      "subject": "Clear the Home map attachment state when access is revoked",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "ac6f5a36e8970397a6adfef1c5b333453345ff80",
+      "subject": "Merge pull request #101 from romanchukg-cloud/feat/cluster-song",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "2df71dd6355b3f45207fba7e459681345f2485e1",
+      "subject": "Merge pull request #106 from romanchukg-cloud/feat/navigation-widget",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "ebc7150eddb36001dd6aa44efaa2ab58eae6555e",
+      "subject": "Merge pull request #107 from romanchukg-cloud/feat/launcher-map",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "b3742964fc369257c6bd3d94e94f8269e3322d33",
+      "subject": "Merge pull request #108 from romanchukg-cloud/feat/diplay-home",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "48d0f9185f2131d47203c561868fce68d76315ce",
+      "subject": "Merge pull request #109 from romanchukg-cloud/fix/rmc-unknown-course",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "e9f150e770bc9460385c6e984b7037a0dab02674",
+      "subject": "Integrate merged launcher features while preserving translated safe-area summaries",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "37d899ac1a2a86787f1ba0d0978487c630382a98",
+      "subject": "Merge pull request #93 from romanchukg-cloud/feat/ukrainian",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "45fefe43f385833bce0ae892175382333ee080b0",
+      "subject": "Document the merged launcher, widget, Ukrainian and GPS changes for the next release",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "9f9bc1b36e227650754f095c783a1040fd19be3e",
+      "subject": "fix: discard USBMUX handshake padding",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "360a6da6175160df72ca585d216166254d77b07f",
+      "subject": "fix: enable platform echo cancellation for CarPlay calls",
+      "disposition": "skipped",
+      "reason": "H6一期关闭麦克风；Siri/电话上行待实车验证，不随此次启用。"
+    },
+    {
+      "commit": "3a2341582f8b0024d6b6ac69eb809bd8d212ae2f",
+      "subject": "Fix small pinch gestures resizing the floating dashboard map",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "48fd9c96745a133d09731a1a697928599bccad86",
+      "subject": "Stabilize map pinch contact and allow immediate reversal at size limits",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "9dba92661a2dba3f1e823552f5b44e554c03e77d",
+      "subject": "Record floating-map gesture validation and car installation",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "f1c8d3a8a9094412586f81f853416978a51ea26f",
+      "subject": "Fall back to WPA2-PSK when the framework cannot report a Wi-Fi Direct group security type",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "18429e737228e8d75d9b6c850af89dcca2f591b6",
+      "subject": "Prepare DiPlay 0.2.9 release with floating maps, widgets and Ukrainian",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "195b2672347293e3edd669e51c8cb38c4e60629f",
+      "subject": "fix: detect BYD battery protocol over ADB",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "43cac1d9aecd212781b659a9f6b7427efdf01688",
+      "subject": "docs: record confirmed vehicle validation",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "429d9041ef54e05f809fa2b83a4622b9c7ff72d4",
+      "subject": "Translate the 0.2.9 map card, widget and dashboard song strings into Ukrainian",
+      "disposition": "skipped",
+      "reason": "本轮保留现有语言，不同步以BYD/多屏新增界面为主的翻译。"
+    },
+    {
+      "commit": "1119cd05712624f28b48eb19f2386daa7ab4000b",
+      "subject": "feat: independent dashboard turn-card overlay on the cluster map",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "931fd70e80f7214939f4417a06fbd852dd276908",
+      "subject": "fix: keep HUD route expiry at 30s and give the overlay its own timeout",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "e75507d1dcb8b3c6742c99bb4e602309b0a42192",
+      "subject": "feat: optional home-screen map sync with the dashboard",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "ca75dd60625aa94d302a642e6dd8874bf28a9fac",
+      "subject": "Play car video with Media3 ExoPlayer and load app URLs through the iPhone",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "b28717bec88a2ca20d259a0add40c654bca82f00",
+      "subject": "Open the car's video player as soon as the iPhone starts the video",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "037af175cc5948327d11ae424879b204c6fce969",
+      "subject": "Add a time bar and 10 s back and forward buttons to the car's video player",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "c752ed5a6e7263748efc4a8bea286e4a857bed31",
+      "subject": "Document the car's video player: it starts at once, has a time bar and plays app video",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "18ce25e943477adeac3169c4c72a7371ef542dc2",
+      "subject": "Publish CarPlay metadata and album artwork",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "732b1016d5f835f1f4ff5e145e96d355336f9785",
+      "subject": "Do not require the manual hotspot name for a USB session",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "2cfd801a1c703de15d3e9a960b27c924ea45bdce",
+      "subject": "Fall back to a free AirPlay port when 7000 is in use",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "f8f46b29c3ca8db4b5ad2f6f8868dacd5f466591",
+      "subject": "fix: bound artwork decode and publication work",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "6e0301ea623420ffde1665d78686410d0e882108",
+      "subject": "fix: restrict remote video resources and recover failed opens",
+      "disposition": "skipped",
+      "reason": "BYD车辆联动、仪表/多屏地图、样例启动器或依赖车辆档位/ADB的停车视频，不属于H6有线一期。"
+    },
+    {
+      "commit": "650e83b2f66c9d393d6a9659b8ef5feb42919cfd",
+      "subject": "Close AirPlay fallback listeners when binding setup fails",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "090ae80a52efaaeefc78f1317e20c33a172c8f67",
+      "subject": "Integrate the ten reviewed pull requests for DiPlay 0.2.10 validation",
+      "disposition": "partial",
+      "reason": "组合合并中的媒体/USB/端口/无线恢复修正由所选源码提交纳入；BYD、多屏、停车视频和麦克风改造跳过。"
+    },
+    {
+      "commit": "3640f833dc853ca874d95a718e59ef3b14d38127",
+      "subject": "Add bounded privacy-safe microphone capture diagnostics",
+      "disposition": "skipped",
+      "reason": "H6一期关闭麦克风；Siri/电话上行待实车验证，不随此次启用。"
+    },
+    {
+      "commit": "4e97b53423764fdc8d8632e66178f63bdef2cbbe",
+      "subject": "Handle bounded padding after USBMUX control replies",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "3d0411d5f2a2b08ed27942ce7103676d5b3e532d",
+      "subject": "Handle bounded padding after USBMUX control replies",
+      "disposition": "equivalent",
+      "reason": "与4e97b53的USBMUX边界修复等价；最终USB解析与v0.2.10文件一致。"
+    },
+    {
+      "commit": "9b12f0db9b83afbcf98c9791fdd0fc5455b2f5c6",
+      "subject": "Add bounded connection and boot diagnostics",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "f8050447d90a36e083b1836f0a51f01909c0ce0c",
+      "subject": "Persist new diagnostics with a bounded background writer",
+      "disposition": "ported",
+      "reason": "通用功能按提交移植，并保留本地API23兼容路径；测试与范围见UPSTREAM_SYNC.md。"
+    },
+    {
+      "commit": "f6c740f56d8bae97f5027637c77090893b2e92f3",
+      "subject": "Merge pull request #82 from aloaiza-dev/feature/now-playing-artwork",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "c11e298d8195be5c18cfa942d91b5be591a2c482",
+      "subject": "Merge pull request #114 from kuishou68/cocoon-fix-usbmux-ios27",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "0f28269a24b1fabafce58d86b281508ba8c641ab",
+      "subject": "Merge pull request #116 from lpcheng1208/fix/telephony-echo-cancellation",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "19241587fd947be1548560d93680ba587ea0ac64",
+      "subject": "Merge pull request #121 from liuqianhe/fix/wifi-p2p-unknown-security-type",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "9b37564f816a46b733ccb3fa45b43ac9676e93e4",
+      "subject": "Merge pull request #123 from lpcheng1208/fix/byd-battery-protocol",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "bc74dffb228bc16e7011ee31c5b50059a4afc4e2",
+      "subject": "Merge pull request #128 from romanchukg-cloud/feat/uk-0.2.9-strings",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "63b5d67a013f1869ef7c979eafd7abb712bb933f",
+      "subject": "Merge pull request #129 from romanchukg-cloud/feat/video-player",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "c4db31a6c454d9963cf0de9a4a0b6a6d521eac6a",
+      "subject": "Merge pull request #130 from romanchukg-cloud/fix/usb-without-hotspot",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "25fa11a030c1bdfe256f777290dd6f51721c7934",
+      "subject": "Merge pull request #133 from serein-morii/feat/center-map-sync",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "3b1f8ad18acb60c7cffb6e901dcdc37dfe2c1c2e",
+      "subject": "Merge pull request #143 from sa3eedo12/fix/airplay-port-fallback",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    },
+    {
+      "commit": "ff9d2c525ab571addfe9d430ecd6cadcceb4c8db",
+      "subject": "Prepare DiPlay 0.2.10 release notes and downloads",
+      "disposition": "skipped",
+      "reason": "上游发布、网站或车辆验证记录，保留本地H6版本说明与实测边界。"
+    },
+    {
+      "commit": "3e43e25c55921bdf5149f5f92851acf202ed353a",
+      "subject": "Include all ten reviewed GitHub PR merges in DiPlay 0.2.10",
+      "disposition": "reviewed_merge",
+      "reason": "按组成提交逐项处理，不整包合并；合并附带BYD/地图/视频依赖不纳入。"
+    }
+  ]
+}

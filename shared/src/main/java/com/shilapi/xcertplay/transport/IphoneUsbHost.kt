@@ -258,7 +258,9 @@ class IphoneUsbHost(
                     "in=${describeUsbEndpoint(endpoints.second)}",
             )
             if (!connection.claimInterface(usbMux, false)) {
-                throw IphoneUsbException.DeviceUnavailable("Android could not claim USBMUX interface 1")
+                throw IphoneUsbException.ResourceUnavailable(
+                    "Android could not claim USBMUX interface ${usbMux.id}; exit the original projection app and reconnect the cable.",
+                )
             }
             claimedInterface = usbMux
             return Iap2UsbSession(connection, endpoints.first, endpoints.second)
@@ -472,6 +474,7 @@ private fun describeUsbEndpoint(endpoint: UsbEndpoint): String =
 
 /** USB bring-up failures that precede iAP2 and are distinct from MFi I2C failures. */
 sealed class IphoneUsbException(message: String, cause: Throwable? = null) : IOException(message, cause) {
+    class ResourceUnavailable(message: String) : IphoneUsbException(message)
     class PermissionDenied(message: String, cause: Throwable? = null) : IphoneUsbException(message, cause)
     class DeviceUnavailable(message: String, cause: Throwable? = null) : IphoneUsbException(message, cause)
     class TimedOut(message: String, cause: Throwable? = null) : IphoneUsbException(message, cause)

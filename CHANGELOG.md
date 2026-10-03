@@ -1,3 +1,10 @@
+# DiPlay 0.2.10-h6 — 2026-10-04
+
+- Selectively port upstream v0.2.10 connection, media metadata/artwork, audio diagnostics, decoder fallback and window recovery improvements; retain API23/ARM32 and H6 single-screen wired settings.
+- Handle missing VPN consent UI without treating it as authorization. Stop automatic USB retries when configuration/interface selection is unavailable, and offer an explicit retry after releasing the original USB connection.
+- Record the official tag/SHA and commit dispositions in docs/upstream-sync.json and exported diagnostics; add API23 compatibility gates to CI. BYD vehicle, dashboard-map, parked-video and microphone changes are excluded.
+- Platform probe results do not establish full CarPlay, audio coexistence, reverse-camera recovery or long-session stability. See docs/UPSTREAM_SYNC.md.
+
 # DiPlay 0.2.7 — 2026-09-29
 
 - App interface in English, Simplified Chinese, Arabic, Russian and Spanish; synchronized Android app-language settings.

@@ -14,6 +14,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Reject credential files in public source
         run: python3 scripts/check_public_tree.py
+      - name: Check selective upstream baseline and API23 build settings
+        run: python3 scripts/check_upstream_sync.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,6 +26,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests, lint and source-only debug build
         run: ./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug --stacktrace
+      - name: Android 6 API compatibility across dependencies
+        run: ./gradlew --no-configuration-cache -I scripts/check-android6-newapi.gradle :mobile:lintDebug --stacktrace
       - name: Test reports
         if: always()
         uses: actions/upload-artifact@v4

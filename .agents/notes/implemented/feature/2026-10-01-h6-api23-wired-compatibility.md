@@ -14,7 +14,7 @@ API23–25 USB 每个连接只有一个旧 requestWait 等待线程和持续 16K
 
 标准库使用定点 Base64/UTC Calendar 封装；媒体创建与关闭受同一锁保护。旧音轨保存实际最终 attributes，API24+读取欠载计数，API23用播放头、实际写入和40ms窗口估计；进度按 track generation 归属，不能将归零当回绕。H6焦点由 MediaKeys 持有，失焦本地静音并在永久失焦发送PAUSE，GAIN不向手机发送PLAY；导航不随媒体静音，PCM继续有界消费。MediaKeys回调按sink token隔离，来自sink的媒体状态先post到主线程再取焦点锁，避免sink→focus与focus→sink锁序形成死锁。
 
-诊断缺文档选择器时写私有 files/diagnostic-exports，仅此目录经FileProvider供用户主动分享。无分享目标时文件保留。Surface决定协商尺寸，不硬编码扣除120px，保留等比例分辨率缩放。
+诊断缺文档选择器时写私有 files/diagnostic-exports，仅此目录经FileProvider供用户主动分享。无分享目标时文件保留。Surface决定协商尺寸，不硬编码扣除120px，保留等比例分辨率缩放。VPN授权用VpnConsentRequest区分Ready/Requested/Unavailable；缺失系统授权窗口或运行时拒绝时清理awaitingVpnConsent，保持vpnReady=false并显示固件限制，不伪造成功或自动提权。
 
 ## Alternatives considered
 
@@ -24,13 +24,17 @@ API23–25 USB 每个连接只有一个旧 requestWait 等待线程和持续 16K
 
 ## Consequences
 
+安装门槛的后续分析见[会话安装路线待评审](../../proposed/process/2026-10-03-h6-install-session-policy.md)，保留这里的应用兼容与原车共存约束；已执行会话安装实验，commit后被策略自动删除；永久放行路线仍待评估。设备所有者随后明确授权驻车临时停用、重启和恢复，新增窗口实验见[临时测试窗口](../process/2026-10-03-h6-temporary-security-probe.md)；这不改变正式普通应用对强制USB驱逐和自动提权的边界。
+
 兼容路径有独立测试和明确流完整性边界，较新系统保持现有策略；代价是维护两种 USB/焦点后端以及旧音轨欠载估算。256KiB队列、1秒关闭、40ms缺包和3秒NCM失败窗都是待实测调参的设计值，不是性能保证。
 
-安装限制、USB vendor request后的真正NCM、驱动关闭、VPN/HAL/TI decoder仍须普通UID实测。认证材料缺失单独阻塞完整会话；source-only APK不用于CarPlay成功或失败结论。原车应用共存，不进行系统提权或kill原车服务。
+临时窗口的普通UID USB open、主动切换后的CDC NCM描述符、TI720p样本循环10分钟、短测试音和一次探针桌面恢复通过；外部临时授权下TUN可建立/释放。实际USB配置仍受音频/HID占用，queue未进入，普通VPN窗口缺失。认证材料缺失单独阻塞完整会话；source-only APK不用于CarPlay成功或失败结论。原车应用共存，不进行系统提权或kill原车服务。
+
+官方0.2.10选择性移植及后续同步门禁见[同步契约](../process/2026-10-03-upstream-0-2-10-h6-sync.md)。它部分重叠并维护本篇API23运行时边界；探针配置/接口不可用转为可识别资源失败，主体停止自动重连并提供手动重试。
 
 ## Testing
 
-运行 shared/common 单元测试、mobile lint/assemble，检查APK最低版本及ARM32 ELF。用例覆盖旧USB迟到完成、关闭竞争、坏完成/queue失败、溢出/退出超时、USBMUX边界及部分写/总截止时间、Base64/PEM与Java字节一致、播放头归零与回绕、1160×720→928×576等比例缩放。测试包括API23真实执行的模拟音轨/通知/私有导出路径及NCM跨16KiB重组；当前360项通过。独立tools/android6-probe复用正式旧读泵，提供用户明确触发的USB、720p样本解码、短测试音和无路由VPN测试。实车门槛和测试结果见 docs/android_6/IMPLEMENTATION_STATUS.md。
+运行 shared/common 单元测试、mobile lint/assemble，检查APK最低版本及ARM32 ELF。用例覆盖旧USB迟到完成、关闭竞争、坏完成/queue失败、溢出/退出超时、USBMUX边界及部分写/总截止时间、Base64/PEM与Java字节一致、播放头归零与回绕、1160×720→928×576等比例缩放。测试包括API23真实执行的模拟音轨/通知/私有导出路径及NCM跨16KiB重组；初步实施与VPN回归364项通过（shared284/common80），包含API23 VPN已有授权、待授权、缺失窗口及拒绝准备场景。0.2.10选择性同步后为501项、500通过/1项跳过，详情见同步契约。独立tools/android6-probe复用正式旧读泵，提供用户明确触发的USB、720p样本解码、短测试音和无路由VPN测试。实车门槛和测试结果见 docs/android_6/IMPLEMENTATION_STATUS.md。
 
 ## Existing note audit
 

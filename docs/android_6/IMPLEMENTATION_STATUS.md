@@ -1,10 +1,18 @@
 # Android 6 初步实施与明日验证交接
 
-日期：2026-10-01；基线 Git HEAD：`7f432d0f425c3d9cd50e26d9162f044d751e9653`。本轮修改尚未提交，未连接/安装/运行车机。
+初步实施记录日期：2026-10-01；实施前基线 Git HEAD：`7f432d0f425c3d9cd50e26d9162f044d751e9653`。适配代码已于2026-10-03提交为`0e77dbf`。
+
+## 最新实车进度（2026-10-03）
+
+主体已于2026-10-04选择性同步官方v0.2.10，版本0.2.10-h6；通用连接、媒体metadata/artwork、解码/窗口恢复和诊断纳入，BYD车辆/多屏/停车视频改造跳过。探针的VPN缺失窗口保护保留；USB配置/接口不可用新增手动重试并停止自动重连。501项电脑测试中500通过、1项跳过，mobile构建/lint及跨模块NewApi通过，minSdk23/ARM32保持。本轮没有新车测，完整会话仍待认证、USB实际数据通道及正式VPN授权。见[同步基线与验证](../UPSTREAM_SYNC.md)。
+
+已按设备所有者驻车授权建立可恢复临时窗口（整包停用落盘后重启）；探针与主体基础包安装/冷启动成功，并完成卸载。普通UID USB open及主动切换后CDC NCM描述符通过；配置切换仍受当前USB音频/HID占用阻塞，queue未进入。TI 720p样本循环10分钟、短测试音可听、一次探针桌面Surface恢复通过。普通VPN授权窗口缺失；额外批准ACTIVATE_VPN临时授权后无路由TUN建立/释放成功，授权已撤销。主体补齐VPN缺失错误处理；source-only缺CarPlay认证，完整会话未开始。测试包均卸载，安全包/组件恢复DEFAULT，最终重启核验完成：两服务PID1321、system_server PID532 hasBound=true，包/组件DEFAULT=0、/system只读、无测试包和TUN残留。详见[临时窗口与适配实测](SECURITY_PROBE_WINDOW_2026-10-03.md)。
+
+下文构建和电脑测试为初步实施记录，不能替代本轮实车结果。
 
 ## 阻塞判断与紧急程度
 
-**当前没有要求立即进入 ADB 环境的开发阻塞。** NEXT_CHECKS 的身份、显示及USB只读快照可明天补采；实际运行门槛必须保留为未验证，不能以本机测试替代。
+只读快照已补采，当前阻塞为安装后的签名信任检查；需要先解决持续留存与冷启动，再进入应用USB/音视频/VPN测试。下表保留原实施时的验证优先级。
 
 | 优先级 | 明天要验证的门槛 | 失败意味着什么 |
 | --- | --- | --- |
@@ -33,7 +41,7 @@
 | W1/M1 | 统一MANUAL回退及配置错误；一期不宣告输入；实际无线/PCM录音/Opus能力协商留二期 |
 | P0.5/T1 | 独立探针复用正式旧USB泵，提供USB/视频/音频/VPN手动操作；本机单元测试及API检查完成 |
 
-未执行：任何 connectedAndroidTest/模拟器/车机运行、APK安装、USB主动切换、真实USB协议回放或手机认证、2小时稳定性、倒车/ACC实车验证。USB线程目标1秒、欠包40ms、NCM失败3秒仍是待实测初值。第三方JAR内部全部标准库调用尚未获得API23真机覆盖，专项NewApi检查通过并不替代其实际运行。
+初步实施日未执行APK安装；2026-10-03追加安装结果见上文。至今未执行：任何 connectedAndroidTest/模拟器/车机应用运行、USB主动切换、真实USB协议回放或手机认证、2小时稳定性、倒车/ACC实车验证。USB线程目标1秒、欠包40ms、NCM失败3秒仍是待实测初值。第三方JAR内部全部标准库调用尚未获得API23真机覆盖，专项NewApi检查通过并不替代其实际运行。
 
 ## 构建及验证结果
 
@@ -63,6 +71,6 @@ export ANDROID_HOME=/Users/lanyu/Library/Android/sdk
 | `com.shihab.diplay.hudtest` | `mobile/build/outputs/apk/debug/mobile-debug.apk`（20927026 bytes）；**source-only**，可用于基础UI/设置检查，没有运行认证 | `000fa90be156d7da29625079762be25ae00a081117f741e3325fed6a1d44ea03` |
 | `com.shihab.diplay.android6probe` | `tools/android6-probe/build/outputs/apk/debug/DiPlayAndroid6Probe-debug.apk`（1585287 bytes）；独立平台门槛探针，不携带认证材料 | `c0ca772a916d2e22a27e40f9fe48b9e0798ed6f4bf1fe5f544c70e061ac563c0` |
 
-探针源码、权限、按钮动作和构建方式见[探针审阅说明](../../tools/android6-probe/README.md)。安装/主动测试尚未获得执行授权，本轮不执行。明天先运行[NEXT_CHECKS](NEXT_CHECKS.md)只读快照，再在审阅并明确授权后进行探针测试；只读信息不能替代平台门槛实测。
+探针源码、权限、按钮动作和构建方式见[探针审阅说明](../../tools/android6-probe/README.md)。2026-10-03已获得探针验证授权并完成只读快照，但会话安装后被自动删除，主动测试未能开始；后续先解决[NEXT_CHECKS](NEXT_CHECKS.md)记录的G0门槛。只读信息不能替代平台门槛实测。
 
 `assembleStandaloneDebug` 的认证门禁保持不变；认证材料到位后用该任务构建正式车测包，不把source-only APK重命名成可验收包。

@@ -1,5 +1,7 @@
 # DiPlay
 
+This fork is **0.2.10-h6**, a selective port of upstream v0.2.10 with Haval H6 API23/ARM32 compatibility. See [sync scope and checkpoint](docs/UPSTREAM_SYNC.md). Full H6 CarPlay sessions still require device validation. The original upstream introduction follows.
+
 **CarPlay for compatible BYD Android head units.** Wired and wireless, with the familiar DiAuto interface. Independent app: `com.shihab.diplay`.
 
 > **BYD support scope:** These projects focus on BYD cars. They may work on other brands, but other brands are unsupported and there are no plans to add support or fix brand-specific incompatibilities.

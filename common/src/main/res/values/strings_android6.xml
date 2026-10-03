@@ -1,4 +1,6 @@
 <resources>
+    <string name="retry_usb_connection">Retry USB connection</string>
+    <string name="usb_connection_unavailable">The USB configuration or interface is unavailable. Exit the original projection app, unplug and reconnect the iPhone, then tap Retry. If this persists, the firmware may still own USB audio/HID.</string>
     <string name="compatibility_profile">Compatibility profile</string>
     <string name="h6_profile">Haval H6 Android 6</string>
     <string name="h6_phase_one">Phase one: USB, H.264 / 30 fps, one screen. Microphone and vehicle integration disabled.</string>

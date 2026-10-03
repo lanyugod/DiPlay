@@ -31,7 +31,11 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.TimeUnit
 
 /** Owns one focus request for all eligible tracks in a CarPlay sink. */
-internal class AudioFocusCoordinator(context: Context?, private val enabled: Boolean) {
+internal class AudioFocusCoordinator(
+    context: Context?,
+    private val enabled: Boolean,
+    private val report: (String) -> Unit = {},
+) {
     private data class Entry(val channel: AudioChannel, val attributes: AudioAttributes)
 
     private val manager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
@@ -40,6 +44,7 @@ internal class AudioFocusCoordinator(context: Context?, private val enabled: Boo
     private var requestedChannel: AudioChannel? = null
     private val listener = AudioManager.OnAudioFocusChangeListener { change ->
         synchronized(this) {
+            runCatching { report("Audio: focus change=$change activeTracks=${active.size}") }
             when (change) {
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> setVolume(DUCKED_VOLUME)
                 AudioManager.AUDIOFOCUS_GAIN -> setVolume(FULL_VOLUME)
@@ -82,7 +87,9 @@ internal class AudioFocusCoordinator(context: Context?, private val enabled: Boo
         request = next
         requestedChannel = primary.channel
         val result = next.request()
-        Log.i(TAG, "audio focus requested channel=${primary.channel} gain=$gain granted=$result active=${active.size}")
+        val line = "Audio: focus requested channel=${primary.channel} gain=$gain granted=$result activeTracks=${active.size}"
+        Log.i(TAG, line)
+        runCatching { report(line) }
     }
 
     private fun setVolume(volume: Float) {
@@ -131,7 +138,11 @@ class AndroidMediaSink(
     private var closed = false
     private var mediaFocusVolume = 1f
     private val appContext = context?.applicationContext
-    private val audioFocusCoordinator = AudioFocusCoordinator(appContext, audioFocusEnabled)
+    private val audioFocusCoordinator = AudioFocusCoordinator(
+        appContext,
+        audioFocusEnabled,
+        onAudioDiagnostic,
+    )
     private val screenStateLock = Any()
     private val activeScreenTypes = mutableSetOf<Int>()
     private val defaultSurface = surface
@@ -423,34 +434,29 @@ private class VideoDecoder(
         val codecData = config.codecData
         val mime = if (codec == VideoCodec.H265) MediaFormat.MIMETYPE_VIDEO_HEVC
         else MediaFormat.MIMETYPE_VIDEO_AVC
-        val format = MediaFormat.createVideoFormat(mime, width, height).apply {
-            setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, MAX_INPUT_SIZE)
-            setInteger(MediaFormat.KEY_PRIORITY, 0)
-        }
-        if (codec == VideoCodec.H265) {
-            val csd = MediaCodecSupport.hevcCodecSpecificData(codecData)
-            if (csd.isNotEmpty()) format.setByteBuffer("csd-0", ByteBuffer.wrap(csd))
+        val csd = if (codec == VideoCodec.H265) {
+            MediaCodecSupport.hevcCodecSpecificData(codecData).takeIf { it.isNotEmpty() }
+                ?.let { listOf(it) } ?: emptyList()
         } else {
             val (sps, pps) = MediaCodecSupport.avcParameterSets(codecData)
-            if (sps.isNotEmpty()) format.setByteBuffer("csd-0", ByteBuffer.wrap(START_CODE + sps))
-            if (pps.isNotEmpty()) format.setByteBuffer("csd-1", ByteBuffer.wrap(START_CODE + pps))
+            listOfNotNull(
+                sps.takeIf { it.isNotEmpty() }?.let { START_CODE + it },
+                pps.takeIf { it.isNotEmpty() }?.let { START_CODE + it },
+            )
         }
-        var candidate: MediaCodec? = null
-        val next = try {
-            createDecoder(mime).also {
-                candidate = it
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
-                    it.codecInfo.getCapabilitiesForType(mime).isFeatureSupported("low-latency")) {
-                    format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
-                }
-                it.configure(format, surface, null, 0)
-                it.start()
-            }
-        } catch (error: Exception) {
-            runCatching { candidate?.release() }
-            Log.e(TAG, "video decoder configure failed mime=$mime size=${width}x$height", error)
-            report("decoder configuration failed mime=$mime size=${width}x$height error=${error.javaClass.simpleName}")
-            null
+        // Some vendor decoders (e.g. MediaTek c2.mtk.avc.decoder) reject the tuned
+        // parameters with BAD_VALUE. Fall back to a minimal format, then to software.
+        val attempts = listOf(
+            DecoderAttempt(codecName = null, tuned = true),
+            DecoderAttempt(codecName = null, tuned = false),
+        ) + softwareDecoderName(mime)?.let { listOf(DecoderAttempt(it, tuned = false)) }.orEmpty()
+        var next: MediaCodec? = null
+        for (attempt in attempts) {
+            next = tryConfigure(mime, csd, surface, attempt)
+            if (next != null) break
+        }
+        if (next == null) {
+            report("decoder configuration failed mime=$mime size=${width}x$height")
         }
         decoder = next
         renderedFrameLogged = false
@@ -462,6 +468,54 @@ private class VideoDecoder(
                 "video decoder configured name=${next.name} mime=$mime size=${width}x$height",
             )
         }
+    }
+
+    private data class DecoderAttempt(val codecName: String?, val tuned: Boolean)
+
+    private fun buildFormat(mime: String, csd: List<ByteArray>, tuned: Boolean): MediaFormat =
+        MediaFormat.createVideoFormat(mime, width, height).apply {
+            if (tuned) {
+                setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, MAX_INPUT_SIZE)
+                setInteger(MediaFormat.KEY_PRIORITY, 0)
+            }
+            csd.forEachIndexed { index, bytes -> setByteBuffer("csd-$index", ByteBuffer.wrap(bytes)) }
+        }
+
+    private fun tryConfigure(
+        mime: String,
+        csd: List<ByteArray>,
+        surface: Surface,
+        attempt: DecoderAttempt,
+    ): MediaCodec? {
+        var candidate: MediaCodec? = null
+        return try {
+            val format = buildFormat(mime, csd, attempt.tuned)
+            val codec = attempt.codecName?.let { MediaCodec.createByCodecName(it) } ?: createDecoder(mime)
+            candidate = codec
+            if (attempt.tuned && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                codec.codecInfo.getCapabilitiesForType(mime).isFeatureSupported("low-latency")) {
+                format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
+            }
+            codec.configure(format, surface, null, 0)
+            codec.start()
+            codec
+        } catch (error: Exception) {
+            runCatching { candidate?.release() }
+            Log.w(
+                TAG,
+                "video decoder configure failed name=${attempt.codecName ?: "default"} " +
+                    "tuned=${attempt.tuned} mime=$mime size=${width}x$height",
+                error,
+            )
+            null
+        }
+    }
+
+    private fun softwareDecoderName(mime: String): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
+        return MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.firstOrNull {
+            !it.isEncoder && it.isSoftwareOnly && mime in it.supportedTypes
+        }?.name
     }
 
     private fun createDecoder(mime: String): MediaCodec {
@@ -689,6 +743,14 @@ private class AudioRenderer(
     private val packetsDropped = AtomicInteger()
     private val lastArrivalNs = AtomicLong()
     private val maxArrivalGapMs = AtomicLong()
+    private val frameBytes = if (format.channels >= 2) 4 else 2
+    private var totalWrittenFrames = 0L
+    private var writtenFramesThisWindow = 0L
+    private var writeErrorsThisWindow = 0
+    private var lastWriteErrorCode: Int? = null
+    private var zeroWritesThisWindow = 0
+    private var partialWritesThisWindow = 0
+    private var lastPlaybackHeadFrames: Long? = null
     private var maxWriteMs = 0L
     private var statsWindowStartNs = 0L
     private var statsLastUnderruns = 0
@@ -813,7 +875,6 @@ private class AudioRenderer(
         var actualAttributes = audioAttributesFor(selection, streamOverride)
         val plan = MediaAudioBuffer.plan(selection.channel == AudioChannel.MEDIA,
             format.sampleRate, format.channels, minBuffer, mediaBufferMillis)
-        val frameBytes = if (format.channels >= 2) 4 else 2
         bytesPerSecond = format.sampleRate * frameBytes
         val built: AudioTrack
         var routeLabel: String
@@ -878,7 +939,7 @@ private class AudioRenderer(
         )
     }
 
-    /** 0 keeps usage routing; 1-10 selects an Android legacy stream ID. */
+    /** 0 使用 usage 路由；1–20 尝试 legacy streamType，由车机决定支持情况。 */
     private fun channelOverride(channel: AudioChannel): Int = when (channel) {
         AudioChannel.MEDIA -> mediaChannel
         AudioChannel.NAVIGATION -> navigationChannel
@@ -1150,8 +1211,20 @@ private class AudioRenderer(
             val writeStarted = System.nanoTime()
             val count = track.write(data, offset + written, writeLength, AudioTrack.WRITE_BLOCKING)
             maxWriteMs = maxOf(maxWriteMs, (System.nanoTime() - writeStarted) / 1_000_000L)
-            if (count <= 0) break
+            if (count < 0) {
+                writeErrorsThisWindow++
+                lastWriteErrorCode = count
+                break
+            }
+            if (count == 0) {
+                zeroWritesThisWindow++
+                break
+            }
+            if (count < writeLength) partialWritesThisWindow++
             written += count
+            val framesWritten = count / frameBytes
+            totalWrittenFrames += framesWritten
+            writtenFramesThisWindow += framesWritten
             bufferProgress.written(count)
             lastPcmWriteNs = System.nanoTime()
             if (!playbackStarted) {
@@ -1198,18 +1271,40 @@ private class AudioRenderer(
         if (!force && now - statsWindowStartNs < STATS_WINDOW_NS) return
         val underruns = if (Build.VERSION.SDK_INT >= 24) track?.underrunCount else null
         val lastRx = lastArrivalNs.get()
+        val currentTrack = track
+        val playbackHeadFrames = currentTrack?.playbackHeadPosition
+            ?.toLong()?.and(0xffff_ffffL)
+        val playbackAdvanceFrames = playbackHeadFrames?.let { current ->
+            val previous = lastPlaybackHeadFrames
+            lastPlaybackHeadFrames = current
+            previous?.let { (current - it) and 0xffff_ffffL }
+        }
+        val queuedFrames = playbackHeadFrames?.let { (totalWrittenFrames - it).coerceAtLeast(0L) }
         val line = "audio stats audioType=${format.audioType} channel=$mappedChannel " +
             "routeType=${track?.routedDevice?.type ?: -1} codec=${format.codec} rx=${packetsReceived.getAndSet(0)} " +
             "dropped=${packetsDropped.getAndSet(0)} underrunSource=${if (Build.VERSION.SDK_INT >= 24) "system" else "estimated"} " +
             "underruns=${underruns?.let { "+${it - statsLastUnderruns}" } ?: "unavailable"} queue=${queue.size} " +
             "trackGeneration=${bufferProgress.generation} queuedPcmBytes=${track?.let { bufferProgress.queuedBytes(it.playbackHeadPosition) } ?: 0} " +
+            "trackState=${currentTrack?.state ?: -1} playState=${currentTrack?.playState ?: -1} " +
+            "sampleRate=${currentTrack?.sampleRate ?: format.sampleRate} " +
+            "trackBufferFrames=${currentTrack?.bufferSizeInFrames ?: -1} " +
             "playing=$playbackStarted maxGapMs=${maxArrivalGapMs.getAndSet(0)} " +
             "sinceRxMs=${if (lastRx == 0L) -1 else (now - lastRx) / 1_000_000L} maxWriteMs=$maxWriteMs " +
+            "writtenFrames=$writtenFramesThisWindow totalWrittenFrames=$totalWrittenFrames " +
+            "playbackHeadFrames=${playbackHeadFrames ?: -1} playbackAdvanceFrames=${playbackAdvanceFrames ?: -1} " +
+            "estimatedQueuedFrames=${queuedFrames ?: -1} writeErrors=$writeErrorsThisWindow " +
+            "lastWriteError=${lastWriteErrorCode ?: "none"} zeroWrites=$zeroWritesThisWindow " +
+            "partialWrites=$partialWritesThisWindow " +
             "decoderDroppedTotal=$inputDropped outputBuffersTotal=$outputBuffers rebuffers=$rebufferCount ended=$force"
         Log.i(STATS_TAG, line)
         report(line)
         statsLastUnderruns = underruns ?: 0
         maxWriteMs = 0L
+        writtenFramesThisWindow = 0L
+        writeErrorsThisWindow = 0
+        lastWriteErrorCode = null
+        zeroWritesThisWindow = 0
+        partialWritesThisWindow = 0
         statsWindowStartNs = now
     }
 

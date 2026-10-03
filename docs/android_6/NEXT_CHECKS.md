@@ -1,7 +1,7 @@
 # 返回 ADB 环境后的最小检查清单
 
-- 日期：2026-10-01。
-- 当前状态：用户已离开 ADB 调试环境；本轮没有连接设备。以下命令供用户稍后一起执行。
+- 最新状态日期：2026-10-03；以下只读命令原编于2026-10-01，保留供后续复查。
+- 当前状态：已按设备所有者驻车授权建立可恢复临时窗口（整包停用落盘后重启）；探针与主体基础包安装/冷启动成功，并完成卸载。普通UID USB open及主动切换后CDC NCM描述符通过；配置切换仍受当前USB音频/HID占用阻塞，queue未进入。TI 720p样本循环10分钟、短测试音可听、一次探针桌面Surface恢复通过。普通VPN授权窗口缺失；额外批准ACTIVATE_VPN临时授权后无路由TUN建立/释放成功，授权已撤销。主体补齐VPN缺失错误处理；source-only缺CarPlay认证，完整会话未开始。测试包均卸载，安全包/组件恢复DEFAULT，最终重启核验完成：两服务PID1321、system_server PID532 hasBound=true，包/组件DEFAULT=0、/system只读、无测试包和TUN残留。详见[临时窗口与适配实测](SECURITY_PROBE_WINDOW_2026-10-03.md)。
 - 依据：[原会话复核](CONVERSATION_REVIEW.md)、[现有实测结果](VALIDATION_RESULTS.md)、[详细设计](DETAILED_DESIGN.md)。
 
 ## 1. 必要的下一轮只读快照
@@ -53,7 +53,7 @@ fi
 | 普通应用音频/VPN | 是否能播放并正确失焦；VpnService是否能建立和释放 | 用户触发测试音/VPN授权 |
 | 运行认证/完整会话 | iPhone13Pro/iOS16.1能否接受身份并完成会话 | 当前缺少可用认证输入，先补齐 |
 
-APK已完成初步构建，包名、源码、签名、哈希和各按钮动作见[实施交接](IMPLEMENTATION_STATUS.md)及[探针审阅说明](../../tools/android6-probe/README.md)。本轮未授权或执行车机安装/主动测试；此处继续仅提供只读采集，不混入adb install、vendor request或VPN建立命令。
+APK已完成初步构建，包名、源码、签名、哈希和各按钮动作见[实施交接](IMPLEMENTATION_STATUS.md)及[探针审阅说明](../../tools/android6-probe/README.md)。2026-10-03已授权并尝试安装，但会话安装后被自动删除，主动测试未执行；此处命令仍仅提供只读采集，不混入adb install、vendor request或VPN建立命令。
 
 ## 3. 当前无需补查的项目
 
@@ -64,4 +64,4 @@ APK已完成初步构建，包名、源码、签名、哈希和各按钮动作�
 
 ## 4. 本轮开发后的优先级
 
-目前没有需要立即返回ADB环境的代码开发阻塞，以上只读快照可明天采集。**实车验收P0门槛**为普通APK安装、应用USB权限/真正NCM、旧queue关闭与VPN；失败可能阻断现有普通APK有线路线。H.264和音频为同次窗口的P1检查。认证材料是完整会话的外部阻塞，ADB快照不能补齐。详细状态、测试结果与审阅包见[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)。
+只读快照已采集，当前优先解决**G0安装后持续留存/冷启动未通过**。安装获准后再验证应用USB权限/真正NCM、旧queue关闭与VPN，随后验证H.264和音频。认证材料是完整会话的另一外部阻塞，ADB快照不能补齐。详细状态、测试结果与审阅包见[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)。

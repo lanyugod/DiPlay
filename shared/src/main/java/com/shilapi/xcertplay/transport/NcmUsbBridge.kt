@@ -281,7 +281,7 @@ class NcmUsbBridge internal constructor(
                         " subclass=${first.interfaceSubclass} proto=${first.interfaceProtocol} ok=$firstClaimed",
                 )
                 if (!firstClaimed) {
-                    throw IphoneUsbException.DeviceUnavailable(
+                    throw IphoneUsbException.ResourceUnavailable(
                         "Android could not claim the NCM interface ${first.id}",
                     )
                 }
@@ -294,7 +294,7 @@ class NcmUsbBridge internal constructor(
                             " class=${function.data.interfaceClass} ok=$dataClaimed",
                     )
                     if (!dataClaimed) {
-                        throw IphoneUsbException.DeviceUnavailable(
+                        throw IphoneUsbException.ResourceUnavailable(
                             "Android could not claim the NCM data interface ${function.data.id}",
                         )
                     }
@@ -306,7 +306,7 @@ class NcmUsbBridge internal constructor(
                     "setInterface iface=${function.data.id}/${function.data.alternateSetting} ok=$altSelected",
                 )
                 if (!altSelected) {
-                    throw IphoneUsbException.DeviceUnavailable(
+                    throw IphoneUsbException.ResourceUnavailable(
                         "Android could not select the NCM data alternate setting",
                     )
                 }
