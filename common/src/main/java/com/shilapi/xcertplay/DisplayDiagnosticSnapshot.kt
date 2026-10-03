@@ -9,7 +9,7 @@ import java.util.UUID
 /** Small, redacted snapshot retained separately from the rotating session logs. */
 internal object DisplayDiagnosticSnapshot {
     private const val PREFS = "diplay_display_diagnostics"
-    private val fields = listOf("selection", "request", "capability", "effective", "phone", "decoder", "output")
+    private val fields = listOf("selection", "geometry", "request", "capability", "effective", "phone", "decoder", "output")
     private fun stamp() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date())
 
     @Synchronized
@@ -24,6 +24,13 @@ internal object DisplayDiagnosticSnapshot {
         val editor = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
         fields.filter { it != "selection" }.forEach(editor::remove)
         editor.putString("attempt", attempt)
+        val metrics = context.resources.displayMetrics
+        val display = (context.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager).defaultDisplay
+        val real = android.graphics.Point().also(display::getRealSize)
+        val app = android.graphics.Point().also(display::getSize)
+        editor.putString("geometry", "${stamp()} Display physical=${real.x}x${real.y} app=${app.x}x${app.y} " +
+            "window=${metrics.widthPixels}x${metrics.heightPixels} densityDpi=${metrics.densityDpi}; " +
+            "Surface and negotiated dimensions recorded in request/effective; safeArea=user mapping")
         for ((key, line) in listOf("request" to request, "capability" to capability, "effective" to effective)) {
             DiagnosticRedactor.redact(line)?.let { editor.putString(key, "${stamp()} $it") }
         }

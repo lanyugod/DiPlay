@@ -3,7 +3,7 @@ package com.shilapi.xcertplay
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
-import android.media.AudioFocusRequest
+import com.shilapi.xcertplay.media.AudioFocusCompat
 import android.media.AudioManager
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
@@ -28,18 +28,27 @@ internal object CarPlayMediaKeys {
         PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var controller: CarPlayController? = null
+    @Volatile private var controller: CarPlayController? = null
     private var session: MediaSession? = null
-    private var focusRequest: AudioFocusRequest? = null
+    private var focusRequest: AudioFocusCompat? = null
     private var focusHeld = false
     private var appContext: Context? = null
+    private var h6FocusPolicy = false
+    private var focusChange: (Int) -> Unit = {}
+    @Volatile private var mediaFocusToken: Any? = null
 
     @Synchronized
-    fun attach(context: Context, next: CarPlayController) {
+    fun attach(context: Context, next: CarPlayController,
+        h6FocusPolicy: Boolean = false, onFocusChange: (Int) -> Unit = {}, mediaFocusToken: Any? = null) {
         if (controller !== next) releaseLocked()
         appContext = context.applicationContext
         controller = next
-        next.playbackListener = ::onIphonePlaying
+        this.h6FocusPolicy = h6FocusPolicy
+        focusChange = onFocusChange
+        this.mediaFocusToken = mediaFocusToken
+        next.playbackListener = { playing ->
+            synchronized(this) { if (controller === next) onIphonePlaying(playing) }
+        }
     }
 
     /** Ends key handling for [expected]; a newer controller's state is left alone. */
@@ -52,13 +61,18 @@ internal object CarPlayMediaKeys {
     }
 
     /** Called when CarPlay music starts or stops; may run on any thread. */
-    fun onMediaAudioChanged(active: Boolean) {
-        mainHandler.post { synchronized(this) { updateLocked(active) } }
+    fun onMediaAudioChanged(active: Boolean, token: Any? = null) {
+        // The sink holds its lifecycle lock here. Never take the focus lock until posted:
+        // focus callbacks apply volume in the opposite direction (focus -> sink).
+        if (mediaFocusToken !== token) return
+        val expected = controller
+        mainHandler.post { synchronized(this) { if (controller === expected && mediaFocusToken === token) updateLocked(active) } }
     }
 
     /** The iPhone started or stopped playing; may run on any thread. */
     fun onIphonePlaying(playing: Boolean) {
-        if (playing) mainHandler.post { synchronized(this) { regainFocusLocked() } }
+        val expected = synchronized(this) { controller }
+        if (playing) mainHandler.post { synchronized(this) { if (controller === expected) regainFocusLocked() } }
     }
 
     // Another car app (its own Spotify, the radio) took audio focus and with it the steering-wheel
@@ -67,8 +81,8 @@ internal object CarPlayMediaKeys {
     private fun regainFocusLocked() {
         val request = focusRequest ?: return
         if (focusHeld) return
-        val audio = appContext?.getSystemService(AudioManager::class.java) ?: return
-        focusHeld = audio.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        focusHeld = request.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        if (h6FocusPolicy && focusHeld) focusChange(AudioManager.AUDIOFOCUS_GAIN)
         Log.i(TAG, "audio focus regained=$focusHeld")
     }
 
@@ -86,20 +100,23 @@ internal object CarPlayMediaKeys {
 
     private fun start(context: Context) {
         val audio = context.getSystemService(AudioManager::class.java)
-        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build(),
-            )
-            .setOnAudioFocusChangeListener({ change ->
-                Log.i(TAG, "audio focus change=$change")
-                // Only a permanent loss moves the car's media keys elsewhere; transient losses come back.
-                if (change == AudioManager.AUDIOFOCUS_LOSS) synchronized(this) { focusHeld = false }
+        val owner = controller
+        val request = AudioFocusCompat(audio, AudioManager.AUDIOFOCUS_GAIN,
+            AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build(),
+            AudioManager.OnAudioFocusChangeListener { change ->
+                synchronized(this) {
+                    if (controller !== owner) return@OnAudioFocusChangeListener
+                    Log.i(TAG, "audio focus change=$change")
+                    if (change == AudioManager.AUDIOFOCUS_LOSS) focusHeld = false
+                    if (h6FocusPolicy) {
+                        focusChange(change)
+                        if (change == AudioManager.AUDIOFOCUS_LOSS) owner?.sendMediaButton(CarPlayMediaButton.PAUSE)
+                    }
+                }
             }, mainHandler)
-            .build()
-        val granted = audio?.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        val granted = request.request() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        if (h6FocusPolicy) focusChange(if (granted) AudioManager.AUDIOFOCUS_GAIN else AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
         focusRequest = request
         focusHeld = granted
         session = MediaSession(context, "DiPlay CarPlay").apply {
@@ -115,9 +132,11 @@ internal object CarPlayMediaKeys {
             it.release()
         }
         session = null
-        focusRequest?.let { request -> appContext?.getSystemService(AudioManager::class.java)?.abandonAudioFocusRequest(request) }
+        focusRequest?.close()
         focusRequest = null
         focusHeld = false
+        focusChange = {}
+        mediaFocusToken = null
     }
 
     private fun send(index: Int, source: String) {

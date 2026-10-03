@@ -53,7 +53,7 @@ fi
 | 普通应用音频/VPN | 是否能播放并正确失焦；VpnService是否能建立和释放 | 用户触发测试音/VPN授权 |
 | 运行认证/完整会话 | iPhone13Pro/iOS16.1能否接受身份并完成会话 | 当前缺少可用认证输入，先补齐 |
 
-APK尚未准备和审阅，因此这里不提供占位的adb install或am start命令，防止把状态变更混入只读采集。
+APK已完成初步构建，包名、源码、签名、哈希和各按钮动作见[实施交接](IMPLEMENTATION_STATUS.md)及[探针审阅说明](../../tools/android6-probe/README.md)。本轮未授权或执行车机安装/主动测试；此处继续仅提供只读采集，不混入adb install、vendor request或VPN建立命令。
 
 ## 3. 当前无需补查的项目
 
@@ -61,3 +61,7 @@ APK尚未准备和审阅，因此这里不提供占位的adb install或am start�
 - 重复codec XML、media.codec服务：XML已采集，历史media.codec不存在；实际运行测试更有价值。
 - MCU、方向盘、ACC、热点/蓝牙无线、麦克风：记录为后续交付说明/二期信息；不阻断一期代码设计。
 - 原车APK逆向、完整日志、系统提权、改USB MUX：没有当前证据要求进入这些路线，且不属于已确认的普通APK方案。
+
+## 4. 本轮开发后的优先级
+
+目前没有需要立即返回ADB环境的代码开发阻塞，以上只读快照可明天采集。**实车验收P0门槛**为普通APK安装、应用USB权限/真正NCM、旧queue关闭与VPN；失败可能阻断现有普通APK有线路线。H.264和音频为同次窗口的P1检查。认证材料是完整会话的外部阻塞，ADB快照不能补齐。详细状态、测试结果与审阅包见[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)。

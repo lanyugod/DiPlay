@@ -81,6 +81,8 @@ class StandaloneHudDemoActivity : Activity() {
     }
 
     private fun validateTarget() {
+        check(Build.VERSION.SDK_INT >= 28) { "This BYD-only test requires Android 9 or newer" }
+        if (Build.VERSION.SDK_INT < 28) return
         check(packageName == "com.shihab.diplay.hudtest" && Process.myUid() >= 10000)
         check(Build.FINGERPRINT == "BYD-AUTO/IVI/IVI:13/TP1A.220624.014/eng.build20260722.221155:user/release-keys") {
             "This test is restricted to the inspected firmware"

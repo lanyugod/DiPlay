@@ -35,6 +35,15 @@ internal object DiagnosticExportStore {
         }
     }
 
+    fun savePrivate(context: android.content.Context, fileName: String, report: String): Uri {
+        val directory = java.io.File(context.filesDir, "diagnostic-exports")
+        if (!directory.isDirectory && !directory.mkdirs()) throw IOException("Cannot create report directory")
+        require(fileName == java.io.File(fileName).name) { "Invalid report name" }
+        val file = java.io.File(directory, fileName)
+        file.writeText(report, Charsets.UTF_8)
+        return androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.diagnostics", file)
+    }
+
     fun write(resolver: ContentResolver, uri: Uri, report: String) {
         val stream = resolver.openOutputStream(uri, "wt")
             ?: throw IOException("Report destination is unavailable")

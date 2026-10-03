@@ -133,7 +133,7 @@ internal fun isWirelessHandoffInProgress(
 class CarPlayController(
     context: Context,
     private val config: CarPlayRuntimeConfig,
-    private val airPlayConfig: AirPlayConfig,
+    airPlayConfig: AirPlayConfig,
     private val identity: AirPlayIdentity,
     private val pairings: PairingStore,
     listener: AirPlaySessionListener,
@@ -145,7 +145,15 @@ class CarPlayController(
     private val locationProvider: Iap2LocationProvider? = null,
     private val vehicleStatusProvider: com.shilapi.xcertplay.transport.VehicleStatusProvider? = null,
 ) : Closeable {
+    private val h6Profile = com.shilapi.xcertplay.compat.H6PlatformProfile.enabled(context)
+    private val airPlayConfig = if (h6Profile) airPlayConfig.copy(
+        main = airPlayConfig.main.copy(fps = 30), cluster = null, hevc = false, microphone = false,
+    ) else airPlayConfig
     init {
+        require(!h6Profile || (config.transport == CarPlayTransport.WIRED &&
+            !config.locationReportingEnabled && !config.identification.vehicleStatusEnabled)) {
+            "H6 phase one requires wired transport with location and vehicle reporting disabled"
+        }
         require(!config.locationReportingEnabled || locationProvider != null) {
             "A location provider is required when location reporting is enabled"
         }
@@ -1299,6 +1307,7 @@ class CarPlayController(
     }
 
     private fun onIphonePermission(result: IphoneUsbHost.PermissionResult) {
+        if (closed || phase !in listOf(Phase.IPHONE, Phase.REENUMERATION)) return
         when (result) {
             is IphoneUsbHost.PermissionResult.Granted -> {
                 // The system broadcast and the polling fallback can both observe the grant.
@@ -1323,6 +1332,7 @@ class CarPlayController(
                 }
             }
             is IphoneUsbHost.PermissionResult.Denied -> {
+                permissionPollGeneration++
                 permissionGrant.set(true)
                 onStatus(CarPlayStatus.Failed("iPhone USB permission was denied"))
             }
@@ -1400,7 +1410,12 @@ class CarPlayController(
         debugLog("wired opening iPhone USB data paths")
         onStatus(CarPlayStatus.SelectingConfiguration)
         onStatus(CarPlayStatus.OpeningDataPaths)
+        val generation = availabilityPollGeneration.get()
         iphoneHost.openIap2UsbSessionAsync(device, executor) { result ->
+            if (closed || generation != availabilityPollGeneration.get() || phase != Phase.DATAPATHS) {
+                if (result is IphoneUsbHost.Iap2SessionResult.Connected) result.session.close()
+                return@openIap2UsbSessionAsync
+            }
             when (result) {
                 is IphoneUsbHost.Iap2SessionResult.Connected -> {
                     try {
@@ -1600,13 +1615,9 @@ class CarPlayController(
             type.equals("disable-bluetooth", ignoreCase = true)
 
     private fun startWirelessHotspot(generation: Int): WirelessHotspotInfo {
-        val hotspotMode = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-            config.wirelessHotspotMode == WirelessHotspotMode.WIFI_P2P
-        ) {
-            WirelessHotspotMode.LOCAL_ONLY_HOTSPOT
-        } else {
-            config.wirelessHotspotMode
-        }
+        val hotspotMode = com.shilapi.xcertplay.compat.PlatformCapabilities(Build.VERSION.SDK_INT)
+            .effectiveHotspotMode(config.wirelessHotspotMode)
+        debugLog("Hotspot requested=${config.wirelessHotspotMode} effective=$hotspotMode api=${Build.VERSION.SDK_INT}")
         if (hotspotMode == WirelessHotspotMode.MANUAL &&
             com.shilapi.xcertplay.network.CarHotspotStatus.isEnabled(appContext) == false
         ) {
@@ -1614,7 +1625,7 @@ class CarPlayController(
         }
         val manager: WirelessHotspotManager = when (hotspotMode) {
             WirelessHotspotMode.WIFI_P2P -> WifiP2pGroupManager(appContext, ::debugLog)
-            WirelessHotspotMode.LOCAL_ONLY_HOTSPOT -> LocalOnlyHotspotManager(appContext, ::debugLog)
+            WirelessHotspotMode.LOCAL_ONLY_HOTSPOT -> throw IOException("Configure MANUAL mode with the car hotspot SSID and password")
             WirelessHotspotMode.MANUAL -> ManualHotspotManager(
                 context = appContext,
                 ssid = config.manualHotspotSsid

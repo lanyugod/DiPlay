@@ -40,6 +40,8 @@ class Ipv6NcmBridge(
     private lateinit var ncmToTunThread: Thread
     private lateinit var tunToNcmThread: Thread
 
+    fun markSessionRunning() = ncm.markSessionRunning()
+
     fun start() {
         check(running.compareAndSet(false, true)) { "bridge is already started" }
         ncmToTunThread = Thread(::runNcmToTun, "ncm-ipv6-in").apply {
@@ -54,10 +56,12 @@ class Ipv6NcmBridge(
 
     override fun close() {
         if (!running.compareAndSet(true, false)) return
-        ncm.close()
-        tun.close()
-        join(ncmToTunThread)
-        join(tunToNcmThread)
+        try { ncm.close() } finally {
+            try { tun.close() } finally {
+                join(ncmToTunThread)
+                join(tunToNcmThread)
+            }
+        }
     }
 
     private fun runNcmToTun() {

@@ -10,13 +10,15 @@ android {
     }
 
     defaultConfig {
-        minSdk = 28
+        minSdk = 23
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    testOptions.unitTests.isIncludeAndroidResources = true
 
     buildFeatures {
         compose = true

@@ -1,0 +1,9 @@
+<resources>
+    <string name="compatibility_profile">Compatibility profile</string>
+    <string name="h6_profile">Haval H6 Android 6</string>
+    <string name="h6_phase_one">Phase one: USB, H.264 / 30 fps, one screen. Microphone and vehicle integration disabled.</string>
+    <string name="h6_wireless_pending">H6 wireless and voice uplink await phase two validation. Connect with USB.</string>
+    <string name="h6_video_effective">Effective H6 video: H.264 / 30 fps. Saved video choices are retained.</string>
+    <string name="h6_audio_effective">H6 uses mobile audio routing and one media focus owner. Navigation overlays music.</string>
+    <string name="diagnostic_private_saved">Report saved in the app. Tap Share to export; it remains saved if no sharing app is available.</string>
+</resources>

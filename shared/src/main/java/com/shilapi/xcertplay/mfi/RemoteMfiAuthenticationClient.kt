@@ -6,7 +6,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.Base64
+import com.shilapi.xcertplay.compat.CompatBase64 as Base64
 import java.util.UUID
 import com.shilapi.xcertplay.iap2.message.Iap2AuthenticationMessages
 

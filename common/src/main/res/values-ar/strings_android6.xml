@@ -1,0 +1,9 @@
+<resources>
+    <string name="compatibility_profile">ملف التوافق</string>
+    <string name="h6_profile">Haval H6 Android 6</string>
+    <string name="h6_phase_one">المرحلة الأولى: USB وH.264 بمعدل 30 إطارًا في الثانية وشاشة واحدة. الميكروفون وتكامل السيارة معطلان.</string>
+    <string name="h6_wireless_pending">الاتصال اللاسلكي وإرسال الصوت في H6 بانتظار اختبار المرحلة الثانية. استخدم USB.</string>
+    <string name="h6_video_effective">فيديو H6 الفعلي: H.264 بمعدل 30 إطارًا في الثانية. تبقى التفضيلات المحفوظة.</string>
+    <string name="h6_audio_effective">يستخدم H6 مسار الصوت العادي ومالكًا واحدًا للتركيز الصوتي. تُشغّل إرشادات الملاحة فوق الموسيقى.</string>
+    <string name="diagnostic_private_saved">حُفظ التقرير داخل التطبيق. اضغط مشاركة لتصديره؛ يبقى الملف محفوظًا عند عدم وجود تطبيق للمشاركة.</string>
+</resources>

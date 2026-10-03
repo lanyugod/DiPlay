@@ -7,6 +7,7 @@ import com.shilapi.xcertplay.iap2.wire.Iap2Frame
 object BydNavigationOutputs {
     /** Recover a journaled interrupted output when the app opens, even before a phone reconnects. */
     fun onAppOpened(context: Context) {
+        if (com.shilapi.xcertplay.compat.H6PlatformProfile.enabled(context)) return
         if (BydStandaloneHudOutput.available(context)) start(context)
         // Read the battery early, so a reading is ready when CarPlay identifies (see batteryStatus).
         if (BydOutputSettings.batteryToIphone(context)) BydBatteryStatus.start(context)
@@ -35,6 +36,7 @@ object BydNavigationOutputs {
         BydBatteryStatus.also { it.start(context) }
 
     fun start(context: Context) {
+        if (com.shilapi.xcertplay.compat.H6PlatformProfile.enabled(context)) return
         val app = context.applicationContext
         useStandalone = BydStandaloneHudOutput.available(app)
         if (useStandalone) standalone.start { BydStandaloneNavigationBridge.initialize(app) }

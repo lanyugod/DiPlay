@@ -188,7 +188,7 @@ class CarPlayVpnService : VpnService() {
                 socket.keepAlive = true
                 socket.setSoLinger(true, 0)
                 val session = synchronized(this) {
-                    if (!active.get()) {
+                    if (!active.get() || generation != attachGeneration) {
                         socket.close()
                         return
                     }
@@ -204,9 +204,16 @@ class CarPlayVpnService : VpnService() {
                         pairings = current.pairings,
                         mfi = current.mfi,
                         listener = object : AirPlaySessionListener by current.listener {
+                            override fun onSessionActive(session: AirPlaySession) {
+                                synchronized(this@CarPlayVpnService) {
+                                    if (generation != attachGeneration || !active.get()) return
+                                    bridge?.markSessionRunning()
+                                }
+                                current.listener.onSessionActive(session)
+                            }
                             override fun onSessionEnded(session: AirPlaySession) {
                                 removeSession(session)
-                                current.listener.onSessionEnded(session)
+                                if (generation == attachGeneration) current.listener.onSessionEnded(session)
                             }
                         },
                         media = current.media,
@@ -274,10 +281,9 @@ class CarPlayVpnService : VpnService() {
         serverSocket?.close()
         serverSocket = null
         closeSessionsLocked()
-        bridge?.close()
-        bridge = null
-        tun?.close()
-        tun = null
+        val oldBridge = bridge; bridge = null
+        val oldTun = tun; tun = null
+        try { oldBridge?.close() } finally { oldTun?.close() }
     }
 
     companion object {

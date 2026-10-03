@@ -1,0 +1,9 @@
+<resources>
+    <string name="compatibility_profile">兼容配置</string>
+    <string name="h6_profile">哈弗 H6 Android 6</string>
+    <string name="h6_phase_one">一期：有线、H.264 / 30fps、单屏；麦克风及车辆联动关闭。</string>
+    <string name="h6_wireless_pending">H6 无线和语音上行待二期验证，请使用 USB 连接。</string>
+    <string name="h6_video_effective">H6 实际使用 H.264 / 30fps，保留已保存的视频偏好。</string>
+    <string name="h6_audio_effective">H6 使用普通音频路由和单一媒体焦点，导航独立叠加播放。</string>
+    <string name="diagnostic_private_saved">报告已保存在应用内，请点“分享”导出。没有分享应用时文件仍保留。</string>
+</resources>

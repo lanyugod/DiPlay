@@ -3,6 +3,7 @@ package com.shilapi.xcertplay.transport
 import android.hardware.usb.UsbConfiguration
 import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.util.Log
@@ -34,9 +35,21 @@ object IphoneCarPlayConfiguration {
         Log.i(
             TAG,
             "carplay config chosen=${chosen?.id} " +
-                "available=${configurations.map { it.id }} detail=${chosen?.let(::describe)}",
+                "available=${configurations.map { it.id }} detail=${configurations.joinToString(";") { "${it.id}=${describe(it)}" }}",
         )
         return chosen
+    }
+
+    /** A failed setter is only recoverable when GET_CONFIGURATION proves the target is active. */
+    fun select(connection: UsbDeviceConnection, configuration: UsbConfiguration) {
+        if (connection.setConfiguration(configuration)) return
+        val active = ByteArray(1)
+        val length = connection.controlTransfer(0x80, 8, 0, 0, active, active.size, 1000)
+        val actual = if (length == 1) active[0].toInt() and 255 else null
+        Log.w(TAG, "setConfiguration failed requested=${configuration.id} active=$actual status=$length")
+        if (actual != configuration.id) throw IphoneUsbException.Protocol(
+            "Could not select CarPlay USB configuration ${configuration.id}; active=$actual. Exit the original projection app and retry.",
+        )
     }
 
     fun describe(configuration: UsbConfiguration): String =

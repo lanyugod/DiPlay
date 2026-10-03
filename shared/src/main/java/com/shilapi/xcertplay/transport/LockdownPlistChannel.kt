@@ -4,7 +4,7 @@ import android.util.Xml
 import java.io.Closeable
 import java.io.StringReader
 import java.nio.charset.StandardCharsets
-import java.util.Base64
+import com.shilapi.xcertplay.compat.CompatBase64 as Base64
 import org.xmlpull.v1.XmlPullParser
 
 /** The small plist value set needed by Lockdown messages. */

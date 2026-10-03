@@ -22,6 +22,26 @@ class AudioBufferProgressTest {
         assertFalse(buffer.shouldRebuffer(false, true, true, true, 0))
     }
 
+    @Test fun progressIsSampledEvenWhenThereIsNoUnderrun() {
+        val buffer = AudioBufferProgress(4)
+        buffer.written(800)
+        assertFalse(buffer.shouldRebuffer(false, true, false, false, 100))
+        assertEquals(400L, buffer.queuedBytes(100))
+        assertTrue(buffer.shouldRebuffer(true, true, true, true, 200))
+    }
+
+    @Test fun resetIsNotAnUnsignedWrapAndNegativeWritesAreIgnored() {
+        val buffer = AudioBufferProgress(4)
+        buffer.written(800); buffer.written(-1)
+        assertEquals(400L, buffer.queuedBytes(100))
+        assertFalse(buffer.shouldRebuffer(true, true, true, true, 0))
+        assertEquals(400L, buffer.queuedBytes(0))
+        buffer.reset()
+        assertEquals(1L, buffer.generation)
+        buffer.written(5)
+        assertEquals(4L, buffer.queuedBytes(0))
+    }
+
     @Test fun unsignedPlaybackHeadWrapKeepsQueuedAudio() {
         val buffer = AudioBufferProgress(2)
         repeat(8) { buffer.written(1_073_741_824) }

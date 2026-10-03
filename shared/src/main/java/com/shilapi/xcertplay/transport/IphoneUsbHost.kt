@@ -67,7 +67,7 @@ class IphoneUsbHost(
     context: Context,
     private val usbManager: UsbManager,
     private val matcher: IphoneUsbMatcher,
-    private val permissionAction: String = "${context.packageName}.IPHONE_USB_PERMISSION",
+    private val permissionAction: String = "${context.packageName}.IPHONE_USB_PERMISSION.${java.util.UUID.randomUUID()}",
 ) {
     private val appContext = context.applicationContext
 
@@ -231,6 +231,7 @@ class IphoneUsbHost(
     }
 
     private fun openIap2UsbSession(device: UsbDevice): Iap2UsbSession {
+        if (Build.VERSION.SDK_INT < 26) LegacyUsbReadPump.assertReconnectAllowed()
         requireConfiguredDevice(device)
         if (!usbManager.hasPermission(device)) {
             throw IphoneUsbException.PermissionDenied("USB permission has not been granted")
@@ -243,12 +244,7 @@ class IphoneUsbHost(
                 ?: throw IphoneUsbException.Protocol(
                     "Re-enumerated iPhone exposes no USBMUX CarPlay configuration",
                 )
-            if (!connection.setConfiguration(configuration)) {
-                Log.w(
-                    IphoneCarPlayConfiguration.TAG,
-                    "setConfiguration ${configuration.id} reported failure; claiming anyway",
-                )
-            }
+            IphoneCarPlayConfiguration.select(connection, configuration)
             val usbMux = IphoneCarPlayConfiguration.usbMuxInterface(configuration)
                 ?: throw IphoneUsbException.Protocol("CarPlay configuration exposes no USBMUX interface")
             val endpoints = IphoneCarPlayConfiguration.usbMuxEndpoints(usbMux)
@@ -261,7 +257,7 @@ class IphoneUsbHost(
                     "out=${describeUsbEndpoint(endpoints.first)} " +
                     "in=${describeUsbEndpoint(endpoints.second)}",
             )
-            if (!connection.claimInterface(usbMux, true)) {
+            if (!connection.claimInterface(usbMux, false)) {
                 throw IphoneUsbException.DeviceUnavailable("Android could not claim USBMUX interface 1")
             }
             claimedInterface = usbMux
@@ -337,16 +333,26 @@ class Iap2UsbSession internal constructor(
     private var closed = false
     private var failure: IphoneUsbException? = null
     private var pendingRead: UsbRequest? = null
+    private val legacyRead = if (Build.VERSION.SDK_INT < 26) legacyUsbTransport(connection, inEndpoint) else null
 
     fun write(data: ByteArray, timeoutMillis: Int) = synchronized(writeLock) {
         checkOpen()
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
         if (data.isEmpty()) return@synchronized
-        val transferred = connection.bulkTransfer(outEndpoint, data, data.size, timeoutMillis)
-        if (transferred != data.size) {
-            throw IphoneUsbException.DeviceUnavailable(
-                "USBMUX write transferred $transferred of ${data.size} bytes",
-            )
+        try {
+            if (Build.VERSION.SDK_INT < 26) {
+                UsbMuxWriteCompat.write(data, timeoutMillis) { offset, length, remaining ->
+                    checkOpen()
+                    connection.bulkTransfer(outEndpoint, data, offset, length, remaining)
+                }
+            } else {
+                val transferred = connection.bulkTransfer(outEndpoint, data, data.size, timeoutMillis)
+                if (transferred != data.size) throw IOException("USBMUX write transferred $transferred of ${data.size} bytes")
+            }
+        } catch (error: Exception) {
+            val failed = failSession("USBMUX write failed; partial messages cannot be retried", error)
+            close()
+            throw failed
         }
     }
 
@@ -354,6 +360,7 @@ class Iap2UsbSession internal constructor(
     fun read(timeoutMillis: Long): ByteArray? = synchronized(readLock) {
         checkOpen()
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
+        if (Build.VERSION.SDK_INT < 26) return@synchronized legacyRead!!.read(timeoutMillis).dataOrThrow()
         val request = UsbRequest()
         var initialized = false
         try {
@@ -408,8 +415,10 @@ class Iap2UsbSession internal constructor(
             closed = true
             pendingRead
         }
-        requestToCancel?.cancel()
-        connection.close()
+        if (legacyRead != null) legacyRead.close() else {
+            requestToCancel?.cancel()
+            connection.close()
+        }
     }
 
     private fun checkOpen() {
@@ -421,6 +430,7 @@ class Iap2UsbSession internal constructor(
         if (closed) throw IphoneUsbException.DeviceUnavailable("USBMUX session is closed")
     }
 
+    @androidx.annotation.RequiresApi(26)
     private fun drainCancelledRead(request: UsbRequest) {
         if (!request.cancel()) {
             throw failSession("Android could not cancel timed out USBMUX read request")

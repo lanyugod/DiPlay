@@ -14,7 +14,7 @@ import java.security.Signature
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
-import java.util.Base64
+import com.shilapi.xcertplay.compat.CompatBase64 as Base64
 
 /** DiPlay's own ADB key: adbd remembers it after the driver approves it once. */
 object AdbKeys {

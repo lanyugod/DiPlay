@@ -2,7 +2,6 @@ package com.shilapi.xcertplay.media
 
 import android.content.Context
 import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioFormat as AndroidAudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
@@ -37,7 +36,7 @@ internal class AudioFocusCoordinator(context: Context?, private val enabled: Boo
 
     private val manager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private val active = LinkedHashMap<AudioTrack, Entry>()
-    private var request: AudioFocusRequest? = null
+    private var request: AudioFocusCompat? = null
     private var requestedChannel: AudioChannel? = null
     private val listener = AudioManager.OnAudioFocusChangeListener { change ->
         synchronized(this) {
@@ -65,26 +64,24 @@ internal class AudioFocusCoordinator(context: Context?, private val enabled: Boo
     private fun refreshRequest() {
         val primary = active.values.maxByOrNull { it.channel.focusPriority() }
         if (primary == null) {
-            request?.let { manager?.abandonAudioFocusRequest(it) }
+            request?.close()
             request = null
             requestedChannel = null
             return
         }
         if (request != null && requestedChannel == primary.channel) return
-        request?.let { manager?.abandonAudioFocusRequest(it) }
+        request?.close()
         val gain = when (primary.channel) {
             AudioChannel.MEDIA -> AudioManager.AUDIOFOCUS_GAIN
             AudioChannel.PHONE -> AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
             AudioChannel.ASSISTANT -> AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
             AudioChannel.NAVIGATION -> return
         }
-        val next = AudioFocusRequest.Builder(gain)
-            .setAudioAttributes(primary.attributes)
-            .setOnAudioFocusChangeListener(listener, Handler(Looper.getMainLooper()))
-            .build()
+        val next = AudioFocusCompat(manager ?: return, gain, primary.attributes,
+            listener, Handler(Looper.getMainLooper()))
         request = next
         requestedChannel = primary.channel
-        val result = manager?.requestAudioFocus(next)
+        val result = next.request()
         Log.i(TAG, "audio focus requested channel=${primary.channel} gain=$gain granted=$result active=${active.size}")
     }
 
@@ -129,7 +126,10 @@ class AndroidMediaSink(
     private val onAudioDiagnostic: (String) -> Unit = {},
     /** True while any music ("media") audio stream is running; called from media threads. */
     private val onMediaAudioChanged: (Boolean) -> Unit = {},
+    val mediaFocusToken: Any = Any(),
 ) : MediaSink {
+    private var closed = false
+    private var mediaFocusVolume = 1f
     private val appContext = context?.applicationContext
     private val audioFocusCoordinator = AudioFocusCoordinator(appContext, audioFocusEnabled)
     private val screenStateLock = Any()
@@ -168,12 +168,16 @@ class AndroidMediaSink(
         } catch (_: java.util.concurrent.RejectedExecutionException) { recoveryPending.set(false) }
     }
 
+    @Synchronized
     fun setSurface(type: Int, surface: Surface) {
+        if (closed) return
         surfaces[type] = surface
         videoDecoders[type]?.setSurface(surface)
     }
 
+    @Synchronized
     fun clearSurface(type: Int, surface: Surface) {
+        if (closed) return
         if (surfaces.remove(type, surface)) videoDecoders[type]?.setSurface(null)
     }
 
@@ -184,20 +188,28 @@ class AndroidMediaSink(
         }
     }
 
+    @Synchronized
     override fun onVideoCodec(type: Int, codec: VideoCodec) {
+        if (closed) return
         pendingVideoCodec[type] = codec
     }
 
+    @Synchronized
     override fun onVideoConfig(type: Int, codecData: ByteArray) {
+        if (closed) return
         val codec = pendingVideoCodec[type] ?: VideoCodec.H264
         videoDecoder(type).configure(codec, codecData)
     }
 
+    @Synchronized
     override fun onVideoFrame(type: Int, naluBytes: ByteArray) {
+        if (closed) return
         videoDecoder(type).submit(naluBytes)
     }
 
+    @Synchronized
     override fun onScreenStreamActive(type: Int, active: Boolean) {
+        if (closed) return
         if (!active) {
             videoRecoveryHandlers.remove(type)
             videoDiagnosticHandlers.remove(type)
@@ -210,16 +222,22 @@ class AndroidMediaSink(
         }
     }
 
+    @Synchronized
     override fun onAudioStarted(id: AudioStreamId, format: AudioFormat, firstSample: Int) {
+        if (closed) return
         audioRenderer(id, format).start()
         if (format.audioType == "media") updateMediaAudio(id, true)
     }
 
+    @Synchronized
     override fun onAudioRtp(id: AudioStreamId, format: AudioFormat, rtp: ByteArray, sample: Int) {
+        if (closed) return
         audioRenderer(id, format).submit(rtp, sample)
     }
 
+    @Synchronized
     override fun onAudioStopped(id: AudioStreamId) {
+        if (closed) return
         audioRenderers.remove(id)?.close()
         updateMediaAudio(id, false)
     }
@@ -233,16 +251,23 @@ class AndroidMediaSink(
         if (before != after) onMediaAudioChanged(after)
     }
 
+    @Synchronized
     override fun onMicrophoneStarted(id: AudioStreamId, config: MicrophoneConfig) {
-        val uplink = microphoneUplinks.computeIfAbsent(id) { MicrophoneUplink(config) }
-        if (!uplink.start()) microphoneUplinks.remove(id, uplink)
+        if (closed) return
+        val uplink = microphoneUplinks[id] ?: MicrophoneUplink(config).also { microphoneUplinks[id] = it }
+        if (!uplink.start()) { microphoneUplinks.remove(id); uplink.close() }
     }
 
+    @Synchronized
     override fun onMicrophoneStopped(id: AudioStreamId) {
+        if (closed) return
         microphoneUplinks.remove(id)?.close()
     }
 
+    @Synchronized
     fun close() {
+        if (closed) return
+        closed = true
         synchronized(screenStateLock) {
             activeScreenTypes.forEach { screenStreamActiveChanged?.invoke(it, false) }
             activeScreenTypes.clear()
@@ -261,18 +286,24 @@ class AndroidMediaSink(
         microphoneUplinks.clear()
     }
 
-    private fun videoDecoder(type: Int): VideoDecoder =
-        videoDecoders.computeIfAbsent(type) {
-            VideoDecoder(
-                type,
-                surfaces[type] ?: defaultSurface,
-                videoWidth,
-                videoHeight,
-                preferSoftwareHevcDecoder,
-                requestKeyFrame = { requestVideoRecovery(type) },
-                report = { videoDiagnosticHandlers[type]?.invoke(it) },
-            )
+    private fun videoDecoder(type: Int): VideoDecoder = videoDecoders[type] ?: VideoDecoder(
+        type, surfaces[type] ?: defaultSurface, videoWidth, videoHeight, preferSoftwareHevcDecoder,
+        requestKeyFrame = { requestVideoRecovery(type) },
+        report = { videoDiagnosticHandlers[type]?.invoke(it) },
+    ).also { videoDecoders[type] = it }
+
+    /** H6 keeps consuming PCM during focus loss so blocking writes cannot wedge the session. */
+    @Synchronized
+    fun setMediaFocusState(change: Int) {
+        if (closed) return
+        mediaFocusVolume = when (change) {
+            AudioManager.AUDIOFOCUS_GAIN -> 1f
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> 0.2f
+            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> 0f
+            else -> mediaFocusVolume
         }
+        audioRenderers.values.forEach { it.setMediaVolume(mediaFocusVolume) }
+    }
 
     @Synchronized
     private fun audioRenderer(id: AudioStreamId, format: AudioFormat): AudioRenderer {
@@ -289,7 +320,7 @@ class AndroidMediaSink(
             navigationStreamType,
             mediaBufferMillis,
             onAudioDiagnostic,
-        ).also { audioRenderers[id] = it }
+        ).also { it.setMediaVolume(mediaFocusVolume); audioRenderers[id] = it }
     }
 }
 
@@ -387,7 +418,7 @@ private class VideoDecoder(
         duplicateConfigLogged = false
         releaseDecoder()
         referenceChain.reset()
-        val surface = outputSurface ?: return
+        val surface = outputSurface?.takeIf { it.isValid } ?: return
         val codec = config.codec
         val codecData = config.codecData
         val mime = if (codec == VideoCodec.H265) MediaFormat.MIMETYPE_VIDEO_HEVC
@@ -434,6 +465,10 @@ private class VideoDecoder(
     }
 
     private fun createDecoder(mime: String): MediaCodec {
+        val candidates = MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.filter {
+            !it.isEncoder && mime in it.supportedTypes
+        }
+        report("decoder candidates mime=$mime names=${candidates.joinToString { it.name }} selection=platform_default")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
             mime == MediaFormat.MIMETYPE_VIDEO_HEVC &&
             preferSoftwareHevcDecoder
@@ -623,6 +658,13 @@ private class AudioRenderer(
 ) : Closeable {
     private data class AudioPacket(val rtp: ByteArray, val sample: Int)
 
+    @Volatile private var mediaVolume = 1f
+    @Synchronized
+    fun setMediaVolume(volume: Float) {
+        mediaVolume = volume
+        if (format.audioType == "media") track?.let { runCatching { it.setVolume(volume) } }
+    }
+
     private var trackAttributes: AudioAttributes? = null
     private var mappedChannel: AudioChannel? = null
     private val queue = LinkedBlockingQueue<AudioPacket>(MAX_QUEUED_PACKETS)
@@ -668,7 +710,13 @@ private class AudioRenderer(
             packetsReceived.incrementAndGet()
             val now = System.nanoTime()
             val previous = lastArrivalNs.getAndSet(now)
-            if (previous != 0L) maxArrivalGapMs.accumulateAndGet((now - previous) / 1_000_000L, ::maxOf)
+            if (previous != 0L) {
+                val gap = (now - previous) / 1_000_000L
+                while (true) {
+                    val current = maxArrivalGapMs.get()
+                    if (gap <= current || maxArrivalGapMs.compareAndSet(current, gap)) break
+                }
+            }
         }
         if (!started || !queue.offer(AudioPacket(rtp, sample))) {
             if (started) packetsDropped.incrementAndGet()
@@ -749,6 +797,7 @@ private class AudioRenderer(
         }
     }
 
+    @Synchronized
     private fun createTrack() {
         val encoding = AndroidAudioFormat.ENCODING_PCM_16BIT
         val channelMask = if (format.channels >= 2) AndroidAudioFormat.CHANNEL_OUT_STEREO
@@ -761,8 +810,7 @@ private class AudioRenderer(
         val selection = mappedSelection()
         mappedChannel = selection.channel
         val streamOverride = channelOverride(selection.channel)
-        val attributes = audioAttributesFor(selection, streamOverride)
-        trackAttributes = attributes
+        var actualAttributes = audioAttributesFor(selection, streamOverride)
         val plan = MediaAudioBuffer.plan(selection.channel == AudioChannel.MEDIA,
             format.sampleRate, format.channels, minBuffer, mediaBufferMillis)
         val frameBytes = if (format.channels >= 2) 4 else 2
@@ -770,10 +818,10 @@ private class AudioRenderer(
         val built: AudioTrack
         var routeLabel: String
         if (streamOverride == 0) {
-            val attributes = audioAttributesFor(selection)
+            actualAttributes = audioAttributesFor(selection)
             routeLabel = "usage"
             built = AudioTrack.Builder()
-                .setAudioAttributes(attributes)
+                .setAudioAttributes(actualAttributes)
                 .setAudioFormat(pcmFormat(encoding, channelMask))
                 .setTransferMode(AudioTrack.MODE_STREAM)
                 .setBufferSizeInBytes(plan.trackBufferBytes)
@@ -791,8 +839,9 @@ private class AudioRenderer(
                 createFallback = {
                     routeLabel = "streamType=$streamType(fallback=usage)"
                     Log.w(TAG, "streamType=$streamType rejected by this ROM; falling back to usage-based track")
+                    actualAttributes = audioAttributesFor(selection)
                     AudioTrack.Builder()
-                        .setAudioAttributes(audioAttributesFor(selection))
+                        .setAudioAttributes(actualAttributes)
                         .setAudioFormat(pcmFormat(encoding, channelMask))
                         .setTransferMode(AudioTrack.MODE_STREAM)
                         .setBufferSizeInBytes(plan.trackBufferBytes)
@@ -801,7 +850,9 @@ private class AudioRenderer(
             )
         }
         track = built
-        trackAttributes = built.audioAttributes
+        trackAttributes = if (Build.VERSION.SDK_INT >= 29) built.audioAttributes else actualAttributes
+        bufferProgress.reset()
+        if (mappedChannel == AudioChannel.MEDIA) built.setVolume(mediaVolume)
         val capacityBytes = built.bufferSizeInFrames * frameBytes
         startThresholdBytes = MediaAudioBuffer.startBytesFor(plan.startBytes, capacityBytes, PREBUFFER_WRITE_CHUNK_BYTES)
         report("Audio: ready audioType=${format.audioType} codec=${format.codec} " +
@@ -922,7 +973,7 @@ private class AudioRenderer(
     private fun usageFor(channel: AudioChannel): Int = when (channel) {
         AudioChannel.MEDIA -> AudioAttributes.USAGE_MEDIA
         AudioChannel.PHONE -> AudioAttributes.USAGE_VOICE_COMMUNICATION
-        AudioChannel.ASSISTANT -> AudioAttributes.USAGE_ASSISTANT
+        AudioChannel.ASSISTANT -> if (Build.VERSION.SDK_INT >= 26) AudioAttributes.USAGE_ASSISTANT else AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE
         AudioChannel.NAVIGATION -> AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE
     }
 
@@ -1114,15 +1165,18 @@ private class AudioRenderer(
     }
 
     private fun startPlayback(track: AudioTrack) {
-        underrunsAtPlaybackStart = track.underrunCount
+        underrunsAtPlaybackStart = if (Build.VERSION.SDK_INT >= 24) track.underrunCount else 0
         track.play()
         playbackStarted = true
     }
 
     private fun maintainPlaybackBuffer() {
         val track = track ?: return
+        val now = System.nanoTime()
+        val systemUnderrun = Build.VERSION.SDK_INT >= 24 && track.underrunCount > underrunsAtPlaybackStart
+        val estimatedUnderrun = Build.VERSION.SDK_INT < 24 && lastPcmWriteNs != 0L && now - lastPcmWriteNs >= 40_000_000L
         if (bufferProgress.shouldRebuffer(mappedChannel == AudioChannel.MEDIA, playbackStarted,
-                track.underrunCount > underrunsAtPlaybackStart, queue.isEmpty(), track.playbackHeadPosition)) {
+                systemUnderrun || estimatedUnderrun, queue.isEmpty(), track.playbackHeadPosition)) {
             // The hardware buffer has actually drained. Pause without flushing or discarding PCM,
             // then use the configured start threshold again when music resumes.
             track.pause()
@@ -1142,17 +1196,19 @@ private class AudioRenderer(
         val now = System.nanoTime()
         if (statsWindowStartNs == 0L) statsWindowStartNs = now
         if (!force && now - statsWindowStartNs < STATS_WINDOW_NS) return
-        val underruns = track?.underrunCount ?: 0
+        val underruns = if (Build.VERSION.SDK_INT >= 24) track?.underrunCount else null
         val lastRx = lastArrivalNs.get()
         val line = "audio stats audioType=${format.audioType} channel=$mappedChannel " +
             "routeType=${track?.routedDevice?.type ?: -1} codec=${format.codec} rx=${packetsReceived.getAndSet(0)} " +
-            "dropped=${packetsDropped.getAndSet(0)} underruns=+${underruns - statsLastUnderruns} queue=${queue.size} " +
+            "dropped=${packetsDropped.getAndSet(0)} underrunSource=${if (Build.VERSION.SDK_INT >= 24) "system" else "estimated"} " +
+            "underruns=${underruns?.let { "+${it - statsLastUnderruns}" } ?: "unavailable"} queue=${queue.size} " +
+            "trackGeneration=${bufferProgress.generation} queuedPcmBytes=${track?.let { bufferProgress.queuedBytes(it.playbackHeadPosition) } ?: 0} " +
             "playing=$playbackStarted maxGapMs=${maxArrivalGapMs.getAndSet(0)} " +
             "sinceRxMs=${if (lastRx == 0L) -1 else (now - lastRx) / 1_000_000L} maxWriteMs=$maxWriteMs " +
             "decoderDroppedTotal=$inputDropped outputBuffersTotal=$outputBuffers rebuffers=$rebufferCount ended=$force"
         Log.i(STATS_TAG, line)
         report(line)
-        statsLastUnderruns = underruns
+        statsLastUnderruns = underruns ?: 0
         maxWriteMs = 0L
         statsWindowStartNs = now
     }

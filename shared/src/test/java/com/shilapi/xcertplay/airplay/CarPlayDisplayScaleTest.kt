@@ -16,6 +16,17 @@ class CarPlayDisplayScaleTest {
     }
 
     @Test
+    fun h6AppSurfaceKeepsItsAspectAndNeverSubtractsTheSystemStripTwice() {
+        val surface = AirPlayDisplayConfig(widthPixels = 1160, heightPixels = 720, fps = 30)
+        assertEquals(surface, CarPlayDisplayScale.apply(surface, 10))
+        val scaled = CarPlayDisplayScale.apply(surface, 8)
+        assertEquals(928, scaled.widthPixels)
+        assertEquals(576, scaled.heightPixels)
+        val physicalSurface = surface.copy(widthPixels = 1280)
+        assertEquals(1280, CarPlayDisplayScale.apply(physicalSurface, 10).widthPixels)
+    }
+
+    @Test
     fun clampsScaleToTheUiRange() {
         assertEquals(3, CarPlayDisplayScale.sanitize(0))
         assertEquals(10, CarPlayDisplayScale.sanitize(20))

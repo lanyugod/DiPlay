@@ -13,7 +13,7 @@ import java.security.Signature
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
 import java.text.SimpleDateFormat
-import java.util.Base64
+import com.shilapi.xcertplay.compat.CompatBase64 as Base64
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone

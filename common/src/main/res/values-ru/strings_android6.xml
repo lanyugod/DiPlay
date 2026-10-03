@@ -1,0 +1,9 @@
+<resources>
+    <string name="compatibility_profile">Профиль совместимости</string>
+    <string name="h6_profile">Haval H6 Android 6</string>
+    <string name="h6_phase_one">Первый этап: USB, H.264 / 30 кадров/с, один экран. Микрофон и интеграция с автомобилем отключены.</string>
+    <string name="h6_wireless_pending">Беспроводная связь и передача голоса H6 ожидают проверки на втором этапе. Используйте USB.</string>
+    <string name="h6_video_effective">Видео H6: H.264 / 30 кадров/с. Сохранённые настройки остаются без изменений.</string>
+    <string name="h6_audio_effective">H6 использует обычный аудиовыход и единого владельца аудиофокуса. Навигация звучит поверх музыки.</string>
+    <string name="diagnostic_private_saved">Отчёт сохранён в приложении. Нажмите «Поделиться» для экспорта; при отсутствии приложения файл сохраняется.</string>
+</resources>

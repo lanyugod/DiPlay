@@ -129,7 +129,7 @@ class DiPlayActivity : ComponentActivity() {
             initialLaunch = false
             if (setupError == null && !CarPlayBackgroundSession.hasSession() &&
                 DiPlayPreferences.autoConnect(this) && intent.getStringExtra("page") == null) {
-                handler.post { connect(AirPlayPersistence.loadWirelessEnabled(this)) }
+                handler.post { connect(H6CompatibilityProfile.wirelessEnabled(this)) }
             }
         }
     }
@@ -167,15 +167,15 @@ class DiPlayActivity : ComponentActivity() {
         left.addView(label(getString(R.string.a_familiar_drive), if (wide) 42 else 36, TEXT, true).apply { setPadding(0, dp(12), 0, dp(10)) })
         left.addView(label(getString(R.string.your_maps_music_and_conversations_carplay_right_here_on_yo), 19, MUTED))
         val card = card()
-        card.addView(label(getString(R.string.wireless_carplay), 12, ACCENT, true).apply { letterSpacing = .12f })
+        card.addView(label(getString(if (H6CompatibilityProfile.enabled(this)) R.string.h6_profile else R.string.wireless_carplay), 12, ACCENT, true).apply { letterSpacing = .12f })
         status = label(getString(R.string.ready_when_you_are), 24, TEXT, true).apply { setPadding(0, dp(10), 0, dp(16)) }
         card.addView(status)
         connectButton = button(getString(R.string.connect_phone), true) {
             if (CarPlayBackgroundSession.hasSession()) openProjection()
-            else connect(true)
+            else connect(!H6CompatibilityProfile.enabled(this))
         }
         card.addView(connectButton, matchButton())
-        val connectionHint = when (AirPlayPersistence.loadWirelessHotspotMode(this)) {
+        val connectionHint = if (H6CompatibilityProfile.enabled(this)) getString(R.string.h6_phase_one) else when (AirPlayPersistence.loadWirelessHotspotMode(this)) {
             WirelessHotspotMode.MANUAL -> getString(R.string.hotspot_hint_manual)
             WirelessHotspotMode.LOCAL_ONLY_HOTSPOT -> getString(R.string.hotspot_hint_local)
             else -> getString(R.string.hotspot_hint_p2p)
@@ -234,6 +234,15 @@ class DiPlayActivity : ComponentActivity() {
     private fun settings(content: LinearLayout) {
         content.addView(label(getString(R.string.your_drive_your_way), 34, TEXT, true))
         content.addView(label(getString(R.string.apply_reconnects_carplay_for_size_resolution_music_buffer), 17, MUTED).apply { setPadding(0, dp(8), 0, dp(24)) })
+        section(content, getString(R.string.compatibility_profile)) { card ->
+            val automatic = com.shilapi.xcertplay.compat.H6PlatformProfile.matches(Build.VERSION.SDK_INT, Build.MODEL, Build.DEVICE)
+            if (automatic) card.addView(label(getString(R.string.h6_phase_one), 16, MUTED))
+            else toggle(card, getString(R.string.h6_profile), getString(R.string.h6_phase_one),
+                H6CompatibilityProfile.enabled(this)) {
+                H6CompatibilityProfile.select(this, it)
+                render()
+            }
+        }
         section(content, getString(R.string.connection_setup), R.drawable.ic_dp_connection) { card ->
             card.addView(label(getString(R.string.choose_how_to_connect_follow_the_setup_steps_and_save_your), 16, MUTED))
             card.addView(button(getString(R.string.open_connection_setup), false) { page = "connection"; render() }, matchButton(12, 60))
@@ -261,14 +270,19 @@ class DiPlayActivity : ComponentActivity() {
                 bufferPresets.indexOf(AirPlayPersistence.loadMediaBufferMillis(this)).coerceAtLeast(0)) {
                 AirPlayPersistence.saveMediaBufferMillis(this, bufferPresets[it])
             }
-            choice(card, getString(R.string.frame_rate), listOf(getString(R.string.s_30_fps_lighter_load), getString(R.string.s_60_fps_smoother_motion)), if (AirPlayPersistence.loadFps(this) == 60) 1 else 0) { AirPlayPersistence.saveFps(this, if (it == 1) 60 else 30) }
-            toggle(card, getString(R.string.efficient_video), getString(R.string.use_hevc_leave_off_for_the_widest_head_unit_compatibility), AirPlayPersistence.loadHevcEnabled(this)) { AirPlayPersistence.saveHevcEnabled(this, it) }
+            if (H6CompatibilityProfile.enabled(this)) card.addView(label(getString(R.string.h6_video_effective), 16, MUTED))
+            else choice(card, getString(R.string.frame_rate), listOf(getString(R.string.s_30_fps_lighter_load), getString(R.string.s_60_fps_smoother_motion)), if (AirPlayPersistence.loadFps(this) == 60) 1 else 0) { AirPlayPersistence.saveFps(this, if (it == 1) 60 else 30) }
+            if (!H6CompatibilityProfile.enabled(this)) toggle(card, getString(R.string.efficient_video), getString(R.string.use_hevc_leave_off_for_the_widest_head_unit_compatibility), AirPlayPersistence.loadHevcEnabled(this)) { AirPlayPersistence.saveHevcEnabled(this, it) }
             toggle(card, getString(R.string.right_hand_drive), getString(R.string.place_carplay_s_controls_closer_to_the_driver), AirPlayPersistence.loadRightHandDrive(this)) { AirPlayPersistence.saveRightHandDrive(this, it) }
             toggle(card, getString(R.string.full_screen), getString(R.string.hide_the_car_s_system_bars_while_carplay_is_open), AirPlayPersistence.loadHideTopBar(this) && AirPlayPersistence.loadHideBottomBar(this)) {
                 AirPlayPersistence.saveHideTopBar(this, it); AirPlayPersistence.saveHideBottomBar(this, it)
             }
         }
         section(content, getString(R.string.audio_routing)) { card ->
+            if (H6CompatibilityProfile.enabled(this)) {
+                card.addView(label(getString(R.string.h6_audio_effective), 16, MUTED))
+                return@section
+            }
             toggle(card, getString(R.string.contrib_audio_home_toggle_audio_focus), getString(R.string.contrib_audio_home_toggle_audio_focus_desc), AirPlayPersistence.loadAudioFocusEnabled(this)) { AirPlayPersistence.saveAudioFocusEnabled(this, it) }
             if (resources.getBoolean(R.bool.config_advanced_audio_channel_mapping)) {
                 toggle(card, getString(R.string.advanced_audio_channel_mapping),
@@ -280,7 +294,7 @@ class DiPlayActivity : ComponentActivity() {
             mediaChannelControl(card)
             navigationChannelControl(card)
         }
-        if (com.shilapi.xcertplay.hud.BydOutputSettings.available(this)) section(content, getString(R.string.byd_navigation), R.drawable.ic_dp_navigation) { card ->
+        if (!H6CompatibilityProfile.enabled(this) && com.shilapi.xcertplay.hud.BydOutputSettings.available(this)) section(content, getString(R.string.byd_navigation), R.drawable.ic_dp_navigation) { card ->
             toggle(card, getString(R.string.navigation_on_hud_and_instrument_cluster),
                 getString(R.string.show_phone_navigation_arrows_distance_and_street_names_on),
                 com.shilapi.xcertplay.hud.BydOutputSettings.enabled(this)) { com.shilapi.xcertplay.hud.BydOutputSettings.setEnabled(this, it) }
@@ -366,7 +380,7 @@ class DiPlayActivity : ComponentActivity() {
                 if (it) {
                     checkAdbAccess(mayAsk = true, reconnectWhenReady = CarPlayBackgroundSession.hasSession())
                 } else if (CarPlayBackgroundSession.hasSession()) {
-                    connect(AirPlayPersistence.loadWirelessEnabled(this))
+                    connect(H6CompatibilityProfile.wirelessEnabled(this))
                 }
             }
             val connectors = EvChargingConnectors.entries
@@ -390,7 +404,7 @@ class DiPlayActivity : ComponentActivity() {
                 if (BydOutputSettings.batteryToIphone(this)) {
                     checkAdbAccess(mayAsk = true, reconnectWhenReady = true)
                 } else {
-                    connect(AirPlayPersistence.loadWirelessEnabled(this))
+                    connect(H6CompatibilityProfile.wirelessEnabled(this))
                 }
             }, matchButton(10, 56))
         }
@@ -477,6 +491,10 @@ class DiPlayActivity : ComponentActivity() {
     }
 
     private fun wirelessLinkControls(parent: LinearLayout) {
+        if (H6CompatibilityProfile.enabled(this)) {
+            parent.addView(label(getString(R.string.h6_wireless_pending), 16, MUTED))
+            return
+        }
         val mode = if (pendingCarHotspotSetup) WirelessHotspotMode.MANUAL else AirPlayPersistence.loadWirelessHotspotMode(this)
         val modes = listOf(WirelessHotspotMode.MANUAL, WirelessHotspotMode.WIFI_P2P)
         val titles = listOf(getString(R.string.built_in_car_hotspot), getString(R.string.wifi_direct))
@@ -581,14 +599,14 @@ class DiPlayActivity : ComponentActivity() {
         if (value == previous) return
         AirPlayPersistence.saveMediaAudioChannel(this, value)
         control.text = summary(value)
-        if (CarPlayBackgroundSession.hasSession()) connect(AirPlayPersistence.loadWirelessEnabled(this))
+        if (CarPlayBackgroundSession.hasSession()) connect(H6CompatibilityProfile.wirelessEnabled(this))
     }
 
     private fun applyNavigationChannel(value: Int, previous: Int, control: Button, summary: (Int) -> String) {
         if (value == previous) return
         AirPlayPersistence.saveNavigationAudioChannel(this, value)
         control.text = summary(value)
-        if (CarPlayBackgroundSession.hasSession()) connect(AirPlayPersistence.loadWirelessEnabled(this))
+        if (CarPlayBackgroundSession.hasSession()) connect(H6CompatibilityProfile.wirelessEnabled(this))
     }
 
     private fun channelLabel(value: Int): String = value.toString()
@@ -720,7 +738,7 @@ class DiPlayActivity : ComponentActivity() {
                 status.text = adbStatusText(result)
                 if (reconnectWhenReady && BydOutputSettings.batteryToIphone(this) &&
                     result?.state == BydAdbAccess.State.READY && result.batteryPercent != null) {
-                    connect(AirPlayPersistence.loadWirelessEnabled(this))
+                    connect(H6CompatibilityProfile.wirelessEnabled(this))
                 }
             }
         }, "diplay-adb-check").start()
@@ -748,7 +766,7 @@ class DiPlayActivity : ComponentActivity() {
     // The cluster screen is described at connection time, so a running session reconnects over
     // its current link. The position choices need no call: getString(R.string.apply_and_reconnect) already does it.
     private fun reconnectForClusterMap() {
-        if (CarPlayBackgroundSession.hasSession()) connect(AirPlayPersistence.loadWirelessEnabled(this))
+        if (CarPlayBackgroundSession.hasSession()) connect(H6CompatibilityProfile.wirelessEnabled(this))
     }
 
     private fun applyWirelessLink(mode: WirelessHotspotMode) {
@@ -784,6 +802,10 @@ class DiPlayActivity : ComponentActivity() {
     }
 
     private fun connect(wireless: Boolean) {
+        if (wireless && H6CompatibilityProfile.enabled(this)) {
+            toast(getString(R.string.h6_wireless_pending))
+            return
+        }
         if (wireless && pendingCarHotspotSetup) { toast(getString(R.string.save_your_hotspot_details_in_connection_setup_first)); page = "connection"; render(); return }
         if (setupError != null) { toast(setupError!!); return }
         if (wireless && AirPlayPersistence.loadWirelessHotspotMode(this) == WirelessHotspotMode.MANUAL &&
@@ -871,6 +893,7 @@ class DiPlayActivity : ComponentActivity() {
     }
 
     private fun resetWirelessGroup() {
+        if (Build.VERSION.SDK_INT < 29) { toast(getString(R.string.h6_wireless_pending)); return }
         val manager = getSystemService(android.net.wifi.p2p.WifiP2pManager::class.java)
         if (manager == null) { toast(getString(R.string.this_head_unit_does_not_support_wi_fi_direct)); return }
         val channel = manager.initialize(this, mainLooper, null)
@@ -924,9 +947,7 @@ class DiPlayActivity : ComponentActivity() {
         // Some head units omit or disable DocumentsUI. Launch itself can throw, before
         // the result callback and the background writer's exception handler ever run.
         runCatching { export.launch(reportFileName()) }.onFailure {
-            toast(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                getString(R.string.this_head_unit_could_not_open_a_save_location_please_try_s)
-                else getString(R.string.this_head_unit_has_no_available_file_picker_to_save_the_re))
+            exportDiagnostics()
         }
     }
 
@@ -941,6 +962,7 @@ class DiPlayActivity : ComponentActivity() {
                 val report = buildString {
                     appendLine("DiPlay ${version()} · private beta diagnostic report")
                     appendLine("Android ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT}")
+                    appendLine(H6CompatibilityProfile.summary(appContext))
                     appendLine("Head unit: ${Build.MANUFACTURER} ${Build.MODEL}")
                     appendLine("Connection: ${if (AirPlayPersistence.loadWirelessEnabled(appContext)) "wireless" else "USB"}")
                     appendLine("Authentication: local experimental beta identity; no remote fallback")
@@ -965,7 +987,7 @@ class DiPlayActivity : ComponentActivity() {
                 if (uri != null) { DiagnosticExportStore.write(appContext.contentResolver, uri, report); uri }
                 else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     DiagnosticExportStore.saveToDownloads(appContext.contentResolver, fileName, report)
-                } else error("A save location is required")
+                } else DiagnosticExportStore.savePrivate(appContext, fileName, report)
             }
             runOnUiThread {
                 exportInProgress = false
@@ -974,7 +996,9 @@ class DiPlayActivity : ComponentActivity() {
                 if (result.isSuccess) {
                     val savedUri = result.getOrThrow()
                     AlertDialog.Builder(this).setTitle(getString(R.string.diagnostic_report_saved))
-                        .setMessage(if (uri == null) "Downloads/DiPlay/$fileName" else getString(R.string.your_report_was_saved_to_the_selected_location))
+                         .setMessage(if (uri != null) getString(R.string.your_report_was_saved_to_the_selected_location)
+                            else if (Build.VERSION.SDK_INT >= 29) "Downloads/DiPlay/$fileName"
+                            else getString(R.string.diagnostic_private_saved))
                         .setPositiveButton(getString(R.string.done), null)
                         .setNeutralButton(getString(R.string.share)) { _, _ ->
                             runCatching {
@@ -1128,7 +1152,7 @@ class DiPlayActivity : ComponentActivity() {
                         save(selection)
                         button.text = "$title · ${options[selection]}"
                         if (reconnects && CarPlayBackgroundSession.hasSession()) {
-                            connect(AirPlayPersistence.loadWirelessEnabled(this))
+                            connect(H6CompatibilityProfile.wirelessEnabled(this))
                         }
                     }
                 }.setNegativeButton(getString(R.string.cancel), null).show()

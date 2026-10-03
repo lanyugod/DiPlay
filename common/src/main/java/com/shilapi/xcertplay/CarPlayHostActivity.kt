@@ -140,7 +140,7 @@ class CarPlayHostActivity : ComponentActivity() {
             hardwareVersion = "1.0",
             carPlayUsbInterfaceNumber = 3,
             locationInformationEnabled = locationReportingEnabled,
-            vehicleStatusEnabled = com.shilapi.xcertplay.hud.BydOutputSettings.batteryToIphone(this),
+            vehicleStatusEnabled = !H6CompatibilityProfile.enabled(this) && com.shilapi.xcertplay.hud.BydOutputSettings.batteryToIphone(this),
             chargingConnectors = com.shilapi.xcertplay.hud.BydOutputSettings.chargingConnectors(this),
         ),
         label = "DiPlay",
@@ -428,7 +428,8 @@ class CarPlayHostActivity : ComponentActivity() {
         val reusedBackgroundSession = adoptBackgroundSession()
         microphoneAvailable =
             checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-        microphonePermissionResolved = microphoneAvailable
+        if (H6CompatibilityProfile.enabled(this)) microphoneAvailable = false
+        microphonePermissionResolved = microphoneAvailable || H6CompatibilityProfile.enabled(this)
         if (reusedBackgroundSession) {
             updateDebugOverlays()
         } else if (microphonePermissionResolved) {
@@ -479,10 +480,26 @@ class CarPlayHostActivity : ComponentActivity() {
         manualHotspotBand = AirPlayPersistence.loadManualHotspotBand(this)
         manualHotspotChannel = AirPlayPersistence.loadManualHotspotChannel(this)
         manualHotspotSecurity = AirPlayPersistence.loadManualHotspotSecurity(this)
+        applyCompatibilityProfile()
         wirelessPermissionsReady = !wirelessEnabled || hasRequiredWirelessPermissions()
     }
 
+    private fun applyCompatibilityProfile() {
+        if (!H6CompatibilityProfile.enabled(this)) return
+        wirelessEnabled = false
+        hevcEnabled = false
+        hevcSoftwareDecoderEnabled = false
+        advancedAudioChannelMapping = false
+        navigationStreamType = android.media.AudioManager.STREAM_MUSIC
+        fps = 30
+        uiScalePercent = 100
+        locationReportingEnabled = false
+        microphoneAvailable = false
+        microphonePermissionResolved = true
+    }
+
     private fun requestStartupPrerequisites() {
+        applyCompatibilityProfile()
         if (locationReportingEnabled && !locationPermissionAvailable) {
             requestLocationPermission()
             return
@@ -702,7 +719,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun clusterDisplayConfig(): AirPlayDisplayConfig? {
-        if (!AirPlayPersistence.loadClusterMapEnabled(this)) return null
+        if (H6CompatibilityProfile.enabled(this) || !AirPlayPersistence.loadClusterMapEnabled(this)) return null
         val theme = effectiveClusterTheme()
         val display = ClusterMapPresentation.findDisplay(this, theme) ?: return null
         val size = ClusterMapPresentation.sizeOf(display)
@@ -2949,15 +2966,16 @@ class CarPlayHostActivity : ComponentActivity() {
     ): AndroidMediaSink {
         // Capture this session's log: late decoder shutdown must not write into a new session.
         val diagnosticLog = sessionLog
+        val focusToken = Any()
         return AndroidMediaSink(
             surface = null,
             videoWidth = videoWidth,
             videoHeight = videoHeight,
             preferSoftwareHevcDecoder = hevcSoftwareDecoderEnabled,
             advancedAudioChannelMapping = advancedAudioChannelMapping,
-            audioFocusEnabled = AirPlayPersistence.loadAudioFocusEnabled(this),
-            mediaChannel = AirPlayPersistence.loadMediaAudioChannel(this),
-            navigationChannel = AirPlayPersistence.loadNavigationAudioChannel(this),
+            audioFocusEnabled = !H6CompatibilityProfile.enabled(this) && AirPlayPersistence.loadAudioFocusEnabled(this),
+            mediaChannel = if (H6CompatibilityProfile.enabled(this)) 0 else AirPlayPersistence.loadMediaAudioChannel(this),
+            navigationChannel = if (H6CompatibilityProfile.enabled(this)) 0 else AirPlayPersistence.loadNavigationAudioChannel(this),
             context = this,
             navigationStreamType = navigationStreamType,
             onScreenStreamActiveChanged = { type, active ->
@@ -2967,7 +2985,8 @@ class CarPlayHostActivity : ComponentActivity() {
             onAudioDiagnostic = { message ->
                 diagnosticLog?.append(formattedLogLine(message, System.currentTimeMillis()))
             },
-            onMediaAudioChanged = CarPlayMediaKeys::onMediaAudioChanged,
+            onMediaAudioChanged = { active -> CarPlayMediaKeys.onMediaAudioChanged(active, focusToken) },
+            mediaFocusToken = focusToken,
         )
     }
 
@@ -3103,6 +3122,8 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun startCarPlay(size: DisplaySize) {
+        applyCompatibilityProfile()
+        appendLog(H6CompatibilityProfile.summary(this))
         if (CarPlayBackgroundSession.hasSession() && !CarPlayBackgroundSession.isOwner(this)) return
         if (shuttingDown.get() || menuOpen || handshakeResetInProgress || controller != null) return
         val controllerGeneration = restartGeneration
@@ -3162,14 +3183,16 @@ class CarPlayHostActivity : ComponentActivity() {
             savePairRecord = { record -> AirPlayPersistence.saveLockdownRecord(this, record) },
             clearPairRecord = { AirPlayPersistence.clearLockdownRecord(this) },
             locationProvider = locationProvider,
-            vehicleStatusProvider = if (com.shilapi.xcertplay.hud.BydOutputSettings.batteryToIphone(this)) {
+            vehicleStatusProvider = if (!H6CompatibilityProfile.enabled(this) && com.shilapi.xcertplay.hud.BydOutputSettings.batteryToIphone(this)) {
                 com.shilapi.xcertplay.hud.BydNavigationOutputs.batteryStatus(applicationContext)
             } else {
                 null
             },
         )
         controller = next
-        CarPlayMediaKeys.attach(this, next)
+        CarPlayMediaKeys.attach(this, next,
+            h6FocusPolicy = H6CompatibilityProfile.enabled(this),
+            onFocusChange = renderer::setMediaFocusState, mediaFocusToken = renderer.mediaFocusToken)
         CarPlayBackgroundSession.store(next, renderer, size.width, size.height, this) { completion ->
             runOnUiThread {
                 shutdown(terminateProcess = false, reason = "DiPlay disconnect", completion = completion)
@@ -3177,7 +3200,9 @@ class CarPlayHostActivity : ComponentActivity() {
             }
         }
         try {
-            startForegroundService(Intent(this, DiPlaySessionService::class.java))
+            val serviceIntent = Intent(this, DiPlaySessionService::class.java)
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(serviceIntent)
+            else startService(serviceIntent)
             next.start()
         } catch (error: RuntimeException) {
             appendLog("Connection could not start: ${error.javaClass.simpleName}")
@@ -3247,6 +3272,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun maybeStartCarPlay() {
+        applyCompatibilityProfile()
         if (shuttingDown.get()) return
         if (CarPlayBackgroundSession.hasSession() && !CarPlayBackgroundSession.isOwner(this)) {
             if (!adoptBackgroundSession()) mainHandler.postDelayed({ maybeStartCarPlay() }, 500)

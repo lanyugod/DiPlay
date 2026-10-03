@@ -9,7 +9,7 @@ import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.security.spec.PKCS8EncodedKeySpec
-import java.util.Base64
+import com.shilapi.xcertplay.compat.CompatBase64 as Base64
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLEngine
@@ -48,7 +48,10 @@ object LockdownTlsEngineFactory {
             }
             return context.createSSLEngine(PEER_HOST, PEER_PORT).apply {
                 useClientMode = true
-                sslParameters = sslParameters.apply { endpointIdentificationAlgorithm = null }
+                // API23's default is also unset; this USB trust manager does not verify DNS names.
+                if (android.os.Build.VERSION.SDK_INT >= 24) {
+                    sslParameters = sslParameters.apply { endpointIdentificationAlgorithm = null }
+                }
             }
         } finally {
             password.fill('\u0000')

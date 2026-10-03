@@ -249,7 +249,7 @@ class WifiP2pGroupManager(
         if (removeGroup && activeChannel != null) {
             removeGroupBlocking(activeChannel)
         }
-        activeChannel?.close()
+        if (Build.VERSION.SDK_INT >= 27) activeChannel?.close()
         activeThread?.quitSafely()
     }
 
@@ -512,7 +512,9 @@ class WifiP2pGroupManager(
         val fiveGhzSupported = runCatching { wifi?.is5GHzBandSupported }.getOrNull()
         val wifiEnabled = runCatching { wifi?.isWifiEnabled }.getOrNull()
         val locationEnabled = runCatching {
-            appContext.getSystemService(LocationManager::class.java)?.isLocationEnabled
+            val location = appContext.getSystemService(LocationManager::class.java)
+            if (Build.VERSION.SDK_INT >= 28) location?.isLocationEnabled
+            else location?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true || location?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true
         }.getOrNull()
         val required = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.NEARBY_WIFI_DEVICES
             else Manifest.permission.ACCESS_FINE_LOCATION
@@ -608,7 +610,7 @@ class WifiP2pGroupManager(
         if (removeGroup && failedChannel != null) {
             removeGroupBlocking(failedChannel)
         }
-        failedChannel?.close()
+        if (Build.VERSION.SDK_INT >= 27) failedChannel?.close()
         failedThread?.quitSafely()
     }
 

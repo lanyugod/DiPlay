@@ -43,6 +43,38 @@ object Ntb16Codec {
         return if (block.size % USB_PACKET_SIZE == 0) block + byteArrayOf(0) else block
     }
 
+    /** Live streams fail on corruption; the permissive parser remains available for offline inspection. */
+    fun parseStrict(block: ByteArray, offset: Int, length: Int): List<ByteArray> {
+        require(offset >= 0 && length >= 12 && offset <= block.size - length) { "Invalid NTB16 range" }
+        require(readU32(block, offset) == NTH16_SIG && readU16(block, offset + 4) == 12) { "Invalid NTB16 header" }
+        require(readU16(block, offset + 8) == length) { "NTB16 length mismatch" }
+        var next = readU16(block, offset + 10)
+        require(next >= 12) { "Missing NDP16 table" }
+        val visited = HashSet<Int>()
+        val tables = mutableListOf<IntRange>()
+        val ranges = mutableListOf<IntRange>()
+        while (next != 0) {
+            require(next >= 12 && next <= length - 12 && visited.add(next)) { "Invalid/cyclic NDP16 chain" }
+            val table = offset + next
+            require(readU32(block, table) == NDP16_SIG) { "Unsupported NDP16 signature" }
+            val tableLength = readU16(block, table + 4)
+            require(tableLength >= 12 && tableLength % 4 == 0 && next + tableLength <= length) { "Invalid NDP16 length" }
+            tables.add(next until next + tableLength)
+            var terminated = false
+            for (entry in 8 until tableLength step 4) {
+                val index = readU16(block, table + entry)
+                val size = readU16(block, table + entry + 2)
+                if (index == 0 && size == 0) { terminated = true; break }
+                require(index >= 12 && size > 0 && index <= length - size) { "Invalid NCM datagram range" }
+                ranges.add(index until index + size)
+            }
+            require(terminated) { "Missing NDP16 terminator" }
+            next = readU16(block, table + 6)
+        }
+        for (range in ranges) require(tables.none { range.first <= it.last && it.first <= range.last }) { "NCM datagram overlaps NDP16" }
+        return ranges.map { block.copyOfRange(offset + it.first, offset + it.last + 1) }
+    }
+
     /**
      * Extracts the Ethernet frames carried by one NTB16 block.
      *
