@@ -538,6 +538,15 @@ class AirPlaySession(
         val type = string(body["type"])
         val params = asMap(body["params"]) ?: emptyMap()
         debugLog("airplay command type=$type keys=${params.keys.sorted()}")
+        if (type == "modesChanged") {
+            val resources = (params["resources"] as? List<*>)?.take(8)?.map { value ->
+                val resource = asMap(value) ?: emptyMap()
+                listOf("resourceID", "owner", "entity", "borrower", "transferType").mapNotNull { key ->
+                    (resource[key] as? Number)?.let { "$key=${it.toLong()}" }
+                }.joinToString(",", "{", "}")
+            } ?: emptyList()
+            debugLog("airplay modes resources=$resources")
+        }
         if (type == "requestUI") listener.onHostUiRequested(this)
         listener.onCommand(this, type, params)
         return RtspMessage.Response(status = 200)

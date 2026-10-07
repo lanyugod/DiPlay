@@ -109,7 +109,10 @@ class CarPlayHostActivity : ComponentActivity() {
     private var connectionPanel: View? = null
     private var wifiRecoveryButton: View? = null
     private var usbRecoveryButton: View? = null
+    private var vpnRecoveryButton: View? = null
     private var usbRecoveryRequired = false
+    private var usbReleaseButton: View? = null
+    private var releaseUsbOnNextStart = false
     private var reconnectAttempts = 0
     private lateinit var airPlayIdentity: AirPlayIdentity
     private var languagePreferenceAtCreate = AppLocale.SYSTEM
@@ -165,9 +168,12 @@ class CarPlayHostActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             awaitingVpnConsent = false
             if (result.resultCode == RESULT_OK) {
-                vpnReady = true
-                maybeStartCarPlay()
+                applyVpnConsentResult(VpnConsentRequest.verifyGranted {
+                    CarPlayVpnService.prepare(this)
+                })
             } else {
+                vpnReady = false
+                vpnRecoveryButton?.visibility = View.VISIBLE
                 setStatus(getString(R.string.vpn_consent_was_denied))
             }
         }
@@ -535,19 +541,30 @@ class CarPlayHostActivity : ComponentActivity() {
             PackageManager.PERMISSION_GRANTED
 
     private fun requestVpnConsent() {
+        if (awaitingVpnConsent || controller != null || shuttingDown.get()) return
         vpnReady = false
-        awaitingVpnConsent = false
-        when (val result = VpnConsentRequest.request(
+        applyVpnConsentResult(VpnConsentRequest.request(
             prepare = { CarPlayVpnService.prepare(this) },
             launch = { consent -> awaitingVpnConsent = true; vpnConsent.launch(consent) },
-        )) {
+        ))
+    }
+
+    private fun applyVpnConsentResult(result: VpnConsentRequest.Result) {
+        when (result) {
             VpnConsentRequest.Result.Ready -> {
+                awaitingVpnConsent = false
                 vpnReady = true
+                vpnRecoveryButton?.visibility = View.GONE
                 maybeStartCarPlay()
             }
-            VpnConsentRequest.Result.Requested -> Unit
+            VpnConsentRequest.Result.Requested -> {
+                vpnReady = false
+                vpnRecoveryButton?.visibility = View.GONE
+            }
             is VpnConsentRequest.Result.Unavailable -> {
                 awaitingVpnConsent = false
+                vpnReady = false
+                vpnRecoveryButton?.visibility = View.VISIBLE
                 Log.w(TAG, "System VPN consent is unavailable", result.cause)
                 appendLog("VPN consent unavailable: ${result.cause.javaClass.simpleName}")
                 setStatus(getString(R.string.vpn_consent_unavailable))
@@ -867,6 +884,32 @@ class CarPlayHostActivity : ComponentActivity() {
                 restartCarPlay("User retried USB after releasing the original connection")
             }
             usbRecoveryButton = this
+        }, LinearLayout.LayoutParams(dp(300), dp(64)).apply { bottomMargin = dp(12) })
+        panel.addView(Button(this).apply {
+            text = getString(R.string.h6_release_usb); isAllCaps = false; textSize = 18f
+            visibility = View.GONE
+            setOnClickListener {
+                android.app.AlertDialog.Builder(this@CarPlayHostActivity)
+                    .setTitle(R.string.h6_release_usb)
+                    .setMessage(R.string.h6_release_usb_warning)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.h6_release_usb_confirm) { _, _ ->
+                        if (usbRecoveryRequired && H6CompatibilityProfile.enabled(this@CarPlayHostActivity) &&
+                            !wirelessEnabled && !handshakeResetInProgress) {
+                            releaseUsbOnNextStart = true
+                            usbRecoveryRequired = false
+                            visibility = View.GONE
+                            restartCarPlay("User explicitly requested H6 iPhone interface release")
+                        }
+                    }.show()
+            }
+            usbReleaseButton = this
+        }, LinearLayout.LayoutParams(dp(340), dp(64)).apply { bottomMargin = dp(12) })
+        panel.addView(Button(this).apply {
+            text = getString(R.string.recheck_vpn_permission); isAllCaps = false; textSize = 18f
+            visibility = View.GONE
+            setOnClickListener { requestVpnConsent() }
+            vpnRecoveryButton = this
         }, LinearLayout.LayoutParams(dp(300), dp(64)).apply { bottomMargin = dp(12) })
         panel.addView(Button(this).apply {
             text = getString(R.string.back_to_diplay); isAllCaps = false; textSize = 18f
@@ -3107,7 +3150,10 @@ class CarPlayHostActivity : ComponentActivity() {
                     usbRecoveryRequired = true
                     wifiRecoveryButton?.visibility = View.GONE
                     usbRecoveryButton?.visibility = View.VISIBLE
-                    setConnectionStage(getString(R.string.usb_connection_unavailable))
+                    usbReleaseButton?.visibility = if (H6CompatibilityProfile.enabled(this) && !wirelessEnabled)
+                        View.VISIBLE else View.GONE
+                    latestStage = description
+                    stageStatusView?.text = getString(R.string.usb_connection_unavailable) + "\n" + description
                 } else if (status.wifiResetRequired) {
                     wifiRecoveryButton?.visibility = View.VISIBLE
                 } else {
@@ -3175,6 +3221,9 @@ class CarPlayHostActivity : ComponentActivity() {
         if (shuttingDown.get() || menuOpen || handshakeResetInProgress || controller != null) return
         usbRecoveryRequired = false
         usbRecoveryButton?.visibility = View.GONE
+        usbReleaseButton?.visibility = View.GONE
+        val releaseUsbForThisAttempt = releaseUsbOnNextStart && H6CompatibilityProfile.enabled(this) && !wirelessEnabled
+        releaseUsbOnNextStart = false
         val controllerGeneration = restartGeneration
         val config = createRuntimeConfig()
         val airPlayConfig = createAirPlayConfig(size)
@@ -3221,6 +3270,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         val next = CarPlayController(
             context = this,
+            allowH6UsbDriverRelease = releaseUsbForThisAttempt,
             config = config,
             airPlayConfig = airPlayConfig,
             identity = airPlayIdentity,

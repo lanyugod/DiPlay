@@ -1,4 +1,5 @@
 <resources>
+    <string name="recheck_vpn_permission">Recheck connection permission</string>
     <string name="retry_usb_connection">Retry USB connection</string>
     <string name="usb_connection_unavailable">The USB configuration or interface is unavailable. Exit the original projection app, unplug and reconnect the iPhone, then tap Retry. If this persists, the firmware may still own USB audio/HID.</string>
     <string name="compatibility_profile">Compatibility profile</string>
@@ -8,4 +9,7 @@
     <string name="h6_video_effective">Effective H6 video: H.264 / 30 fps. Saved video choices are retained.</string>
     <string name="h6_audio_effective">H6 uses mobile audio routing and one media focus owner. Navigation overlays music.</string>
     <string name="diagnostic_private_saved">Report saved in the app. Tap Share to export; it remains saved if no sharing app is available.</string>
+    <string name="h6_release_usb">Release iPhone interfaces and retry</string>
+    <string name="h6_release_usb_warning">While parked, temporarily take over this iPhone’s USB audio, controls and network interfaces. Requires USB permission for the selected iPhone. USB audio and controls will pause; normal exit restores the original configuration. If the app is killed or the device changes, reconnect the cable. This applies to one connection attempt.</string>
+    <string name="h6_release_usb_confirm">Release and retry</string>
 </resources>

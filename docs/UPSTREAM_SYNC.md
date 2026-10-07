@@ -1,6 +1,6 @@
 # 官方版本同步与 H6 Android 6 兼容
 
-本地版本为 **0.2.10-h6**（versionCode 29），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
+本地版本为 **0.2.10-h6**（versionCode 31），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
 
 前次官方源码基线为885dffb。本轮逐项审阅到标签之间的97个提交，移植16个通用源码提交，其余处置见机器可读的[同步清单](upstream-sync.json)。这是所需功能的同步基线，不表示与官方全部功能或支持范围一致。官方最低Android 9，本分支mobile/common/shared及NDK保持API23、保留ARM32；automotive仍为API28。
 
@@ -25,15 +25,15 @@ BYD昼夜回调、CAN/CANFD电量、轮速/档位、仪表歌曲、独立转向�
 
 ## 探针结果落到主体
 
-- VPN授权窗口缺失时，`VpnConsentRequest`返回Unavailable，清理等待状态、保持`vpnReady=false`并提示固件限制。探针的临时外部授权不移植为App自动提权，也不等于正式App授权。
-- USB配置切换失败且GET_CONFIGURATION不能证明目标配置有效时，或USBMUX/NCM接口无法占用时，报告可识别的`ResourceUnavailable`。主体停止自动重连，提示退出原车投屏、拔插线缆并提供手动重试；不强抢内核音频/HID接口。现有USB配置仍按USBMUX+CDC NCM描述符选择，不使用探针的“首个USBMUX配置”规则。
+- VPN授权窗口缺失时，`VpnConsentRequest`返回Unavailable，清理等待状态、保持`vpnReady=false`并提供重新检查。系统弹窗返回成功也再次prepare核验；主体获外部授权后可直接继续。探针的临时外部授权不移植为App自动提权，也不等于正式App授权。
+- USB配置切换失败且GET_CONFIGURATION不能证明目标配置有效时，或USBMUX/NCM接口无法占用时，报告可识别的`ResourceUnavailable`。主体停止自动重连，提示退出原车投屏、拔插线缆并提供手动重试；默认不强抢内核音频/HID接口；H6用户明确确认的单次释放与恢复见[车测记录](android_6/USB_RELEASE_TEST_2026-10-04.md)。现有USB配置仍按USBMUX+CDC NCM描述符选择，不使用探针的“首个USBMUX配置”规则。探针请求配置3失败，主体对相同快照选6，不能直接外推主体配置5/6失败。
 - TI720p样本循环、短测试音和一次探针Surface恢复只证明平台能力。正式持续视频、触摸、音乐/导航混音、拔插、倒车、两小时稳定性仍待认证车测包验收。应用改动不能解决固件USB所有权或补出缺失的系统VPN授权界面。
 
 ## 本轮电脑验证
 
-2026-10-04：shared353/common148，共501项，500通过、1项既有macOS通配绑定跳过、无失败/错误。新增窗口、触摸和媒体metadata回归在API23/29运行。普通mobile lint/assemble与跨模块NewApi通过；清单、公有树和笔记校验通过。
+2026-10-04：shared355/common154，共509项，508通过、1项既有macOS通配绑定跳过、无失败/错误。窗口、触摸和媒体metadata回归在API23/29运行；新增API23 VPN授权核验/重新检查及USB描述符选择回归。普通mobile lint/assemble、standalone构建与跨模块NewApi通过；清单、公有树和笔记校验通过。
 
-source-only debug包为`mobile/build/outputs/apk/debug/mobile-debug.apk`，包名`com.shihab.diplay.hudtest`，versionName`0.2.10-h6-hud-test`/code29，minSdk23/target37，包含armeabi-v7a，v1/v2签名通过，18,440,852 bytes。SHA256：`b680aed918da1fe25511a312502bbfb3e4e72012c203c788b3f71e8f539407c3`。本轮未安装到车机或进行新的实车验证。
+standalone实车包已独立保存于`.private/h6-car-test/2026-10-04/DiPlay-0.2.10-h6-car-test.apk`，包名`com.shihab.diplay.hudtest`，versionName`0.2.10-h6-hud-test`/code29，minSdk23/target37，包含armeabi-v7a，v1/v2签名通过，19,274,221 bytes。SHA256：`65abca1e237616e3700adc5bbee36fe847119197876b6efee618f52cb9ffdb20`。显式运行输入来自校验过的官方公开0.2.10发布APK，源码不包含身份；本地签名校验6次通过，手机接受程度仍待测。详细来源、主体VPN授权及测试步骤见[实车交接](android_6/CAR_TEST_2026-10-04.md)。本轮未安装到车机或进行新的实车验证。
 
 ## 下一次同步步骤
 
@@ -50,4 +50,6 @@ python3 scripts/check_public_tree.py
 ./gradlew --no-configuration-cache -I scripts/check-android6-newapi.gradle :mobile:lintDebug
 ```
 
-有认证输入时使用既有`assembleStandaloneDebug`门禁，普通`assembleDebug`仅产出source-only包。不要用官方版本号、电脑回归或探针样本结果宣告完整H6 CarPlay已通过。
+有认证输入时使用既有`assembleStandaloneDebug`门禁；未设置显式输入的普通`assembleDebug`产出source-only包。不要用官方版本号、电脑回归或探针样本结果宣告完整H6 CarPlay已通过。
+
+2026-10-04晚间：当前源码code31；车机保留已验证接口释放的code30。shared359/common156共515项，514通过/1项既有跳过，lint/普通与standalone/API23通过。code31仅补有限音频资源和NCM边界诊断，未安装实车；用户今天无法换线，稳定性和车机音频待下一轮验证，详见[车测记录](android_6/USB_RELEASE_TEST_2026-10-04.md)。

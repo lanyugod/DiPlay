@@ -147,6 +147,7 @@ class CarPlayController(
     private val clearPairRecord: () -> Unit = {},
     private val locationProvider: Iap2LocationProvider? = null,
     private val vehicleStatusProvider: com.shilapi.xcertplay.transport.VehicleStatusProvider? = null,
+    private val allowH6UsbDriverRelease: Boolean = false,
 ) : Closeable {
     private val h6Profile = com.shilapi.xcertplay.compat.H6PlatformProfile.enabled(context)
     private val airPlayConfig = if (h6Profile) airPlayConfig.copy(
@@ -172,6 +173,10 @@ class CarPlayController(
     private val usbManager = context.getSystemService(UsbManager::class.java)
     private val bluetoothAdapter =
         appContext.getSystemService(BluetoothManager::class.java)?.adapter
+    private val usbDriverRelease = if (allowH6UsbDriverRelease && h6Profile &&
+        config.transport == CarPlayTransport.WIRED) {
+        com.shilapi.xcertplay.transport.H6UsbDriverRelease(appContext, ::connectionDiagnostic)
+    } else null
     private val iphoneHost = IphoneUsbHost(
         appContext,
         usbManager,
@@ -181,6 +186,7 @@ class CarPlayController(
             IphoneUsbMatcher.appleVendor()
         },
     )
+    init { iphoneHost.releaseKernelInterfaces = usbDriverRelease?.let { recovery -> { device -> recovery.release(device) } } }
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private val touchExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private val tunnelExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -456,6 +462,11 @@ class CarPlayController(
                         executorTerminated = executor.awaitTermination(EXECUTOR_CLOSE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     } catch (_: InterruptedException) {
                         Thread.currentThread().interrupt()
+                    }
+                    if (executorTerminated) {
+                        closeBestEffort("H6 USB restore") { usbDriverRelease?.restore() }
+                    } else if (usbDriverRelease != null) {
+                        connectionDiagnostic("H6 USB restore deferred: worker still owns device; reconnect cable")
                     }
                     connectionDiagnostic(
                         "teardown end elapsedMs=${elapsedMillis(teardownStarted)} " +

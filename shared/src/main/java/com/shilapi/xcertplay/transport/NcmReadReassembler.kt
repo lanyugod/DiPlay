@@ -37,7 +37,8 @@ internal class NcmReadReassembler(private val maxChunkBytes: Int = 16_384) {
             require(length >= 28) { "Invalid NTB16 block length $length" }
             val wireLength = length + if (length % 512 == 0) 1 else 0
             if (bufferedSize < wireLength) return
-            if (wireLength > length) require(buffered[length].toInt() == 0) { "Invalid NCM short-packet pad" }
+            if (wireLength > length) require(buffered[length].toInt() == 0) { "Invalid NCM short-packet pad block=$length buffered=$bufferedSize " +
+                "next=${(length until minOf(length + 4, bufferedSize)).joinToString(",") { (buffered[it].toInt() and 255).toString(16) }}" }
             for (frame in Ntb16Codec.parseStrict(buffered, 0, length)) {
                 require(frames.size < 256 && frameBytes + frame.size <= 1024 * 1024) { "NCM frame queue overflow" }
                 frames.addLast(frame); frameBytes += frame.size

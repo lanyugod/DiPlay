@@ -8,12 +8,13 @@ import java.nio.ByteBuffer
 internal fun legacyUsbTransport(connection: UsbDeviceConnection, endpoint: UsbEndpoint): LegacyUsbReadPump =
     LegacyUsbReadPump(object : LegacyUsbDriver {
         private val request = UsbRequest()
+        private val connectionCloser = UsbConnectionCloser { connection.close() }
         override fun initialize() = request.initialize(connection, endpoint)
         @Suppress("DEPRECATION")
         override fun queue(buffer: ByteBuffer, length: Int) = request.queue(buffer, length)
         override fun waitForCompletion() = connection.requestWait() === request
         override fun cancel() = request.cancel()
-        override fun closeConnection() { connection.close() }
+        override fun closeConnection() { connectionCloser.close() }
         override fun close() { request.close() }
     }, diagnostic = { android.util.Log.i(IphoneCarPlayConfiguration.TAG, it) })
 

@@ -35,4 +35,18 @@ class VpnConsentRequestTest {
         val result = VpnConsentRequest.request({ throw error }) { fail("Preparation failed") }
         assertSame(error, (result as VpnConsentRequest.Result.Unavailable).cause)
     }
+
+    @Test fun aVendorResultOkWithoutActualConsentCannotStartTheTransport() {
+        val result = VpnConsentRequest.verifyGranted { Intent("still-needs-consent") }
+        assertTrue((result as VpnConsentRequest.Result.Unavailable).cause is SecurityException)
+    }
+
+    @Test fun consentGrantedToThisPackageIsRecognizedOnRecheck() {
+        assertSame(VpnConsentRequest.Result.Ready, VpnConsentRequest.verifyGranted { null })
+    }
+
+    @Test fun failedRecheckKeepsTheApplicationUnauthorized() {
+        val error = SecurityException("VPN service denied")
+        assertSame(error, (VpnConsentRequest.verifyGranted { throw error } as VpnConsentRequest.Result.Unavailable).cause)
+    }
 }

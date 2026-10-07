@@ -14,7 +14,7 @@ API23–25 USB 每个连接只有一个旧 requestWait 等待线程和持续 16K
 
 标准库使用定点 Base64/UTC Calendar 封装；媒体创建与关闭受同一锁保护。旧音轨保存实际最终 attributes，API24+读取欠载计数，API23用播放头、实际写入和40ms窗口估计；进度按 track generation 归属，不能将归零当回绕。H6焦点由 MediaKeys 持有，失焦本地静音并在永久失焦发送PAUSE，GAIN不向手机发送PLAY；导航不随媒体静音，PCM继续有界消费。MediaKeys回调按sink token隔离，来自sink的媒体状态先post到主线程再取焦点锁，避免sink→focus与focus→sink锁序形成死锁。
 
-诊断缺文档选择器时写私有 files/diagnostic-exports，仅此目录经FileProvider供用户主动分享。无分享目标时文件保留。Surface决定协商尺寸，不硬编码扣除120px，保留等比例分辨率缩放。VPN授权用VpnConsentRequest区分Ready/Requested/Unavailable；缺失系统授权窗口或运行时拒绝时清理awaitingVpnConsent，保持vpnReady=false并显示固件限制，不伪造成功或自动提权。
+诊断缺文档选择器时写私有 files/diagnostic-exports，仅此目录经FileProvider供用户主动分享。无分享目标时文件保留。Surface决定协商尺寸，不硬编码扣除120px，保留等比例分辨率缩放。VPN授权用VpnConsentRequest区分Ready/Requested/Unavailable；缺失系统授权窗口或运行时拒绝时清理awaitingVpnConsent，保持vpnReady=false并显示固件限制，不伪造成功或自动提权。系统弹窗RESULT_OK后再次prepare核验本应用授权；缺失/拒绝时显示重新检查按钮，外部授权后可继续，不需重新安装。探针授权不跨包转移；请求等待、已有controller或关闭过程中不重复发起授权。
 
 ## Alternatives considered
 
@@ -28,14 +28,16 @@ API23–25 USB 每个连接只有一个旧 requestWait 等待线程和持续 16K
 
 兼容路径有独立测试和明确流完整性边界，较新系统保持现有策略；代价是维护两种 USB/焦点后端以及旧音轨欠载估算。256KiB队列、1秒关闭、40ms缺包和3秒NCM失败窗都是待实测调参的设计值，不是性能保证。
 
-临时窗口的普通UID USB open、主动切换后的CDC NCM描述符、TI720p样本循环10分钟、短测试音和一次探针桌面恢复通过；外部临时授权下TUN可建立/释放。实际USB配置仍受音频/HID占用，queue未进入，普通VPN窗口缺失。认证材料缺失单独阻塞完整会话；source-only APK不用于CarPlay成功或失败结论。原车应用共存，不进行系统提权或kill原车服务。
+临时窗口的普通UID USB open、主动切换后的CDC NCM描述符、TI720p样本循环10分钟、短测试音和一次探针桌面恢复通过；外部临时授权下TUN可建立/释放且随后撤销。探针请求配置3失败，实际配置2有音频/HID占用，queue未进入；主体现有USBMUX+CDC NCM规则会选快照中的6，因此不能据探针配置3失败断定主体选5/6也失败。主体实际配置/claim/queue仍待测，普通VPN窗口缺失且主体未授权。源码构建不带认证；本地standalone已通过显式私有输入补齐官方公开发布的实验身份，构建门禁不放宽，详见[同步契约](../process/2026-10-03-upstream-0-2-10-h6-sync.md)。原车应用共存，不进行系统提权或kill原车服务。
 
 官方0.2.10选择性移植及后续同步门禁见[同步契约](../process/2026-10-03-upstream-0-2-10-h6-sync.md)。它部分重叠并维护本篇API23运行时边界；探针配置/接口不可用转为可识别资源失败，主体停止自动重连并提供手动重试。
 
 ## Testing
 
-运行 shared/common 单元测试、mobile lint/assemble，检查APK最低版本及ARM32 ELF。用例覆盖旧USB迟到完成、关闭竞争、坏完成/queue失败、溢出/退出超时、USBMUX边界及部分写/总截止时间、Base64/PEM与Java字节一致、播放头归零与回绕、1160×720→928×576等比例缩放。测试包括API23真实执行的模拟音轨/通知/私有导出路径及NCM跨16KiB重组；初步实施与VPN回归364项通过（shared284/common80），包含API23 VPN已有授权、待授权、缺失窗口及拒绝准备场景。0.2.10选择性同步后为501项、500通过/1项跳过，详情见同步契约。独立tools/android6-probe复用正式旧读泵，提供用户明确触发的USB、720p样本解码、短测试音和无路由VPN测试。实车门槛和测试结果见 docs/android_6/IMPLEMENTATION_STATUS.md。
+运行 shared/common 单元测试、mobile lint/assemble，检查APK最低版本及ARM32 ELF。用例覆盖旧USB迟到完成、关闭竞争、坏完成/queue失败、溢出/退出超时、USBMUX边界及部分写/总截止时间、Base64/PEM与Java字节一致、播放头归零与回绕、1160×720→928×576等比例缩放。测试包括API23真实执行的模拟音轨/通知/私有导出路径及NCM跨16KiB重组；初步实施与VPN回归364项通过（shared284/common80），包含API23 VPN已有授权、待授权、缺失窗口及拒绝准备场景。0.2.10选择性同步后为501项；主体授权重新检查与描述符选择回归后为509项、508通过/1项跳过，详情见同步契约。独立tools/android6-probe复用正式旧读泵，提供用户明确触发的USB、720p样本解码、短测试音和无路由VPN测试。实车门槛和测试结果见 docs/android_6/IMPLEMENTATION_STATUS.md。
 
 ## Existing note audit
 
 仓库没有现存 .agents/notes 决策；未找到同主题的 proposed/implemented/rejected 记录。docs/android_6/DETAILED_DESIGN.md 是实施依据，保持设计与实际结果分别记录。
+
+H6默认连接仍不驱逐驱动；用户明确确认的单次接口接管及恢复由[授权fd直接解绑](../feature/2026-10-04-h6-usb-fd-disconnect.md)部分扩展此边界。音频未建立与疑似线缆接触问题见[音频/边界诊断](../bug-fix/2026-10-04-h6-carplay-audio-boundary-diagnostics.md)。

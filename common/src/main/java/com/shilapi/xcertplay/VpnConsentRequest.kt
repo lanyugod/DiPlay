@@ -19,4 +19,13 @@ internal object VpnConsentRequest {
     } catch (error: RuntimeException) {
         Result.Unavailable(error)
     }
+
+    /** A vendor dialog's RESULT_OK alone must not authorize the transport. */
+    fun verifyGranted(prepare: () -> Intent?): Result = try {
+        if (prepare() == null) Result.Ready else Result.Unavailable(
+            SecurityException("VPN consent returned without granting this application"),
+        )
+    } catch (error: RuntimeException) {
+        Result.Unavailable(error)
+    }
 }

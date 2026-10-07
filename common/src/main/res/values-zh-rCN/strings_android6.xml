@@ -1,4 +1,5 @@
 <resources>
+    <string name="recheck_vpn_permission">重新检查连接权限</string>
     <string name="retry_usb_connection">重试 USB 连接</string>
     <string name="usb_connection_unavailable">USB 配置或接口暂不可用。请退出原车投屏，拔插 iPhone 后点击重试。若仍失败，可能是固件仍占用 USB 音频/HID 接口。</string>
     <string name="compatibility_profile">兼容配置</string>
@@ -8,4 +9,7 @@
     <string name="h6_video_effective">H6 实际使用 H.264 / 30fps，保留已保存的视频偏好。</string>
     <string name="h6_audio_effective">H6 使用普通音频路由和单一媒体焦点，导航独立叠加播放。</string>
     <string name="diagnostic_private_saved">报告已保存在应用内，请点“分享”导出。没有分享应用时文件仍保留。</string>
+    <string name="h6_release_usb">释放 iPhone 接口并重试</string>
+    <string name="h6_release_usb_warning">请驻车操作。临时接管这台 iPhone 的 USB 音频、控制和网卡接口，需要本应用已获得该 iPhone 的 USB 权限。原车 USB 音频和控制会暂停，正常退出恢复原配置；应用被强杀或设备发生变化时，请拔插数据线恢复。仅作用于本次连接尝试。</string>
+    <string name="h6_release_usb_confirm">释放并重试</string>
 </resources>

@@ -69,6 +69,8 @@ class IphoneUsbHost(
     private val matcher: IphoneUsbMatcher,
     private val permissionAction: String = "${context.packageName}.IPHONE_USB_PERMISSION.${java.util.UUID.randomUUID()}",
 ) {
+    /** Assigned only by a controller created by the explicit H6 recovery action. */
+    internal var releaseKernelInterfaces: ((UsbDevice) -> Unit)? = null
     private val appContext = context.applicationContext
 
     sealed class PermissionRequest {
@@ -244,7 +246,10 @@ class IphoneUsbHost(
                 ?: throw IphoneUsbException.Protocol(
                     "Re-enumerated iPhone exposes no USBMUX CarPlay configuration",
                 )
+            releaseKernelInterfaces?.invoke(device)
             IphoneCarPlayConfiguration.select(connection, configuration)
+            // Selecting a new configuration can auto-bind its CDC NCM interfaces.
+            releaseKernelInterfaces?.invoke(device)
             val usbMux = IphoneCarPlayConfiguration.usbMuxInterface(configuration)
                 ?: throw IphoneUsbException.Protocol("CarPlay configuration exposes no USBMUX interface")
             val endpoints = IphoneCarPlayConfiguration.usbMuxEndpoints(usbMux)

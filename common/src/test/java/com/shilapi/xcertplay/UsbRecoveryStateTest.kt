@@ -50,5 +50,23 @@ class UsbRecoveryStateTest {
         assertEquals(View.GONE, retry.visibility)
     }
 
+    @Test fun h6FailureOffersManualReleaseButNeverGrantsItAutomatically() {
+        activity.getSharedPreferences("diplay_compatibility", 0).edit().putBoolean("h6_wired_phase_one", true).commit()
+        val release = Button(activity).apply { visibility = View.GONE }
+        field("usbReleaseButton").set(activity, release)
+        report(CarPlayStatus.Failed("active=2", usbRecoveryRequired = true))
+        assertEquals(View.VISIBLE, release.visibility)
+        assertFalse(field("releaseUsbOnNextStart").getBoolean(activity))
+    }
+
+    @Test fun otherProfilesDoNotOfferTheH6Takeover() {
+        activity.getSharedPreferences("diplay_compatibility", 0).edit().clear().commit()
+        val release = Button(activity).apply { visibility = View.GONE }
+        field("usbReleaseButton").set(activity, release)
+        report(CarPlayStatus.Failed("active=2", usbRecoveryRequired = true))
+        assertEquals(View.GONE, release.visibility)
+        assertFalse(field("releaseUsbOnNextStart").getBoolean(activity))
+    }
+
     private fun field(name: String) = activity.javaClass.getDeclaredField(name).apply { isAccessible = true }
 }

@@ -37,3 +37,21 @@ source/CI build when the explicit asset input is absent; do not install that out
 standalone car-test package. Before delivery, verify both `assets/offline-mfi/identity.pk8`
 and `assets/offline-mfi/certificate.p7b` in the APK against the selected local inputs.
 Update the existing test app without uninstalling it to preserve its settings.
+
+For the selected official 0.2.10 release, the local preparation helper verifies the
+entire APK before writing only the two runtime assets to the ignored private tree:
+
+```sh
+python3 scripts/prepare_h6_auth.py \
+  --apk /absolute/path/to/DiPlay-0.2.10.apk \
+  --sha256 8c555ce179f30a30b659914f70355245a594f82957424bf44fc532fb1409441e \
+  --output .private/h6-car-test/2026-10-04/runtime-assets
+DIPLAY_AUTH_ASSETS_DIR="$PWD/.private/h6-car-test/2026-10-04/runtime-assets" \
+  ./gradlew --no-configuration-cache :mobile:assembleStandaloneDebug
+```
+
+The helper requires an explicitly downloaded and selected release APK; it does not
+fetch identities during source builds. Its receipt stays beside the asset root and
+is not packaged. Local key/certificate verification does not prove iPhone acceptance.
+The completed H6 package and device-side VPN/test steps are recorded in
+[the 2026-10-04 car-test handoff](android_6/CAR_TEST_2026-10-04.md).
