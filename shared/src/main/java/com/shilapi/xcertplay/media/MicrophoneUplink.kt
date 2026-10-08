@@ -32,6 +32,8 @@ internal class MicrophoneUplink(private val config: MicrophoneConfig) : Closeabl
 
     fun start(): Boolean {
         if (!running.compareAndSet(false, true)) return true
+        // This branch precedes every AudioRecord call, including buffer-size probing.
+        if (config.silence) return startSilence()
 
         val channelMask = if (config.channels >= 2) {
             AndroidAudioFormat.CHANNEL_IN_STEREO
@@ -122,6 +124,47 @@ internal class MicrophoneUplink(private val config: MicrophoneConfig) : Closeabl
             true
         } catch (error: Exception) {
             Log.e(TAG, "microphone recording failed", error)
+            release()
+            false
+        }
+    }
+
+    private fun startSilence(): Boolean {
+        if (config.codec != AudioCodecKind.LPCM) {
+            running.set(false)
+            return false
+        }
+        return try {
+            val output = DatagramSocket(null).apply {
+                reuseAddress = true
+                bind(InetSocketAddress(InetAddress.getByName("::"), 0))
+            }
+            socket = output
+            thread = Thread({
+                val frame = ByteArray(config.frameBytes)
+                val counters = MicrophoneCounters()
+                val intervalNs = config.samplesPerPacket * 1_000_000_000L / config.sampleRate
+                var deadline = System.nanoTime()
+                try {
+                    while (running.get()) {
+                        sendFrame(output, counters, frame)
+                        deadline += intervalNs
+                        val remaining = deadline - System.nanoTime()
+                        if (remaining > 0) Thread.sleep(remaining / 1_000_000L, (remaining % 1_000_000L).toInt())
+                        else deadline = System.nanoTime() // Do not burst after a scheduler stall.
+                    }
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                } catch (error: Exception) {
+                    if (running.get()) Log.w(TAG, "silent audio input failed", error)
+                } finally {
+                    release()
+                }
+            }, "carplay-silent-input").apply { isDaemon = true; start() }
+            Log.i(TAG, "silent audio input started type=${config.audioType} rate=${config.sampleRate} channels=${config.channels}")
+            true
+        } catch (error: Exception) {
+            Log.w(TAG, "silent audio input unavailable", error)
             release()
             false
         }

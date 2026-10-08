@@ -14,6 +14,8 @@ data class MicrophoneConfig(
     val key: ByteArray,
     val codec: AudioCodecKind = AudioCodecKind.LPCM,
     val bitrate: Int? = null,
+    /** Send generated silence; AudioRecord must never be opened for this stream. */
+    val silence: Boolean = false,
 ) {
     val samplesPerPacket: Int
         get() = if (codec == AudioCodecKind.OPUS) {

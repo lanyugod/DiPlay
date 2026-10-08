@@ -2877,6 +2877,7 @@ class CarPlayHostActivity : ComponentActivity() {
             rightHandDrive = rightHandDrive,
             hevc = hevcEnabled,
             microphone = microphoneAvailable,
+            silentAudioInput = H6CompatibilityProfile.enabled(this),
             manufacturer = normalizedManufacturer(),
             model = normalizedModel(),
             oemLabel = oemLabel,
@@ -3069,6 +3070,7 @@ class CarPlayHostActivity : ComponentActivity() {
         CarPlayMediaEngine(
             sink = sink,
             microphoneEnabled = microphoneAvailable,
+            silentAudioInput = H6CompatibilityProfile.enabled(this),
             audioCaptureDirectory = audioCaptureDirectory(),
         )
 

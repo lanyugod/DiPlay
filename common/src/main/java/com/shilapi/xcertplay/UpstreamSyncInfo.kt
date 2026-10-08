@@ -6,5 +6,7 @@ internal object UpstreamSyncInfo {
     const val COMMIT = "3e43e25c55921bdf5149f5f92851acf202ed353a"
     const val LOCAL_VERSION = "0.2.10-h6"
 
-    fun report() = "Upstream baseline v$VERSION commit=$COMMIT; selective H6/API23 port, local=$LOCAL_VERSION"
+    const val LOCAL_VERSION_CODE = 33
+
+    fun report() = "Upstream baseline v$VERSION commit=$COMMIT; selective H6/API23 port, local=$LOCAL_VERSION build=$LOCAL_VERSION_CODE"
 }

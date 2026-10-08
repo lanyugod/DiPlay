@@ -1,6 +1,6 @@
 # 官方版本同步与 H6 Android 6 兼容
 
-本地版本为 **0.2.10-h6**（versionCode 31），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
+本地版本为 **0.2.10-h6**（versionCode 33），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
 
 前次官方源码基线为885dffb。本轮逐项审阅到标签之间的97个提交，移植16个通用源码提交，其余处置见机器可读的[同步清单](upstream-sync.json)。这是所需功能的同步基线，不表示与官方全部功能或支持范围一致。官方最低Android 9，本分支mobile/common/shared及NDK保持API23、保留ARM32；automotive仍为API28。
 
@@ -53,3 +53,5 @@ python3 scripts/check_public_tree.py
 有认证输入时使用既有`assembleStandaloneDebug`门禁；未设置显式输入的普通`assembleDebug`产出source-only包。不要用官方版本号、电脑回归或探针样本结果宣告完整H6 CarPlay已通过。
 
 2026-10-04晚间：当前源码code31；车机保留已验证接口释放的code30。shared359/common156共515项，514通过/1项既有跳过，lint/普通与standalone/API23通过。code31仅补有限音频资源和NCM边界诊断，未安装实车；用户今天无法换线，稳定性和车机音频待下一轮验证，详见[车测记录](android_6/USB_RELEASE_TEST_2026-10-04.md)。
+
+2026-10-08：以 `/Users/lanyu/IdeaProjects/DiPlay` 为主项目同步此前隔离实现：code32 的 NCM 可选短包填充及回归，code33 的 H6 PCM 静音输入候选及回归。上游标签/SHA和97项提交处置不变。真实麦克风保持关闭，静音输入候选未完成实车验收。迁移和本地主项目验证见[音频同步交接](android_6/AUDIO_2026-10-08.md)。

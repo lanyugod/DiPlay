@@ -386,6 +386,7 @@ class AirPlaySession(
                 Log.i(
                     TAG,
                     "airplay /info features=${info["features"]} " +
+                        "microphone=${config.microphone} silentInput=${config.silentAudioInput} " +
                         "audioFormats=${(info["audioFormats"] as? List<*>)?.size ?: 0} " +
                         "audioLatencies=${(info["audioLatencies"] as? List<*>)?.size ?: 0}",
                 )

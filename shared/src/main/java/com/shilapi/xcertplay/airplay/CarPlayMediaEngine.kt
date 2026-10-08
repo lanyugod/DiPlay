@@ -38,6 +38,7 @@ class CarPlayMediaEngine(
     private val sink: MediaSink,
     private val microphoneEnabled: Boolean = false,
     private val audioCaptureDirectory: File? = null,
+    private val silentAudioInput: Boolean = false,
 ) : AirPlayMediaHandler {
     internal data class StreamKey(
         val session: AirPlaySession,
@@ -338,8 +339,12 @@ class CarPlayMediaEngine(
         stream: Map<String, Any?>,
         format: AudioFormat,
     ): MicrophoneConfig? {
-        if (!microphoneEnabled || type != STREAM_TYPE_MAIN_AUDIO) return null
-        if (format.audioType != "telephony" && format.audioType != "speechrecognition") return null
+        if ((!microphoneEnabled && !silentAudioInput) || type != STREAM_TYPE_MAIN_AUDIO) return null
+        val silence = !microphoneEnabled && silentAudioInput
+        if (silence) {
+            if (format.codec != AudioCodecKind.LPCM ||
+                format.audioType !in setOf("compatibility", "default", "telephony", "speechrecognition")) return null
+        } else if (format.audioType != "telephony" && format.audioType != "speechrecognition") return null
         val port = (stream["dataPort"] as? Number)?.toInt() ?: return null
         if (port !in 1..65535) return null
         val host = session.remoteAddress ?: return null
@@ -369,6 +374,7 @@ class CarPlayMediaEngine(
             key = key,
             codec = format.codec,
             bitrate = if (format.codec == AudioCodecKind.OPUS) opusBitrate else null,
+            silence = silence,
         )
     }
 

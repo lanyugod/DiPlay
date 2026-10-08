@@ -45,6 +45,8 @@ data class AirPlayConfig(
     val hevc: Boolean = false,
     val disableAudioOutput: Boolean = false,
     val microphone: Boolean = false,
+    /** PCM silence for receivers that cannot capture a microphone but need duplex negotiation. */
+    val silentAudioInput: Boolean = false,
     val manufacturer: String = "xcertplay",
     val model: String = "xcertplay",
     val oemLabel: String = "xcertplay",

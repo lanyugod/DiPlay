@@ -31,8 +31,54 @@ class NcmReadReassemblerTest {
         assertEquals(513, block.size)
         val decoder = NcmReadReassembler()
         decoder.append(block.copyOfRange(0, 5)); assertFalse(decoder.hasFrames())
-        decoder.append(block.copyOfRange(5, 512)); assertFalse(decoder.hasFrames())
-        decoder.append(block.copyOfRange(512, 513)); assertArrayEquals(frame, decoder.pollFrame())
+        decoder.append(block.copyOfRange(5, 512)); assertArrayEquals(frame, decoder.pollFrame())
+        decoder.append(block.copyOfRange(512, 513)); assertFalse(decoder.hasFrames())
+        val next = byteArrayOf(8, 9)
+        decoder.append(Ntb16Codec.build(next, 2)); assertArrayEquals(next, decoder.pollFrame())
+    }
+    @Test fun observed3584ByteBlockMayBeFollowedImmediatelyByNcmHeader() {
+        val first = ByteArray(3556) { it.toByte() }
+        val second = ByteArray(1544) { 7 }
+        val unpadded = Ntb16Codec.build(first, 1).copyOf(3584)
+        val wire = unpadded + Ntb16Codec.build(second, 2)
+        assertEquals(5156, wire.size)
+        val decoder = NcmReadReassembler()
+        decoder.append(wire)
+        assertArrayEquals(first, decoder.pollFrame())
+        assertArrayEquals(second, decoder.pollFrame())
+        assertFalse(decoder.hasFrames())
+    }
+    @Test fun optionalPadAndUnpaddedSuccessorSurviveEveryHeaderSplit() {
+        for (blockLength in listOf(512, 1024, 3584, 16384)) {
+            for (padded in listOf(false, true)) {
+                for (headerBytes in 0..12) {
+                    val first = ByteArray(blockLength - 28) { 9 }
+                    val second = byteArrayOf(3, 4, 5)
+                    val encoded = Ntb16Codec.build(first, 1)
+                    val block = if (padded) encoded else encoded.copyOf(blockLength)
+                    val successor = Ntb16Codec.build(second, 2)
+                    val stream = block + successor
+                    val split = block.size + headerBytes
+                    val decoder = NcmReadReassembler()
+                    for (offset in 0 until split step 16384) {
+                        decoder.append(stream.copyOfRange(offset, minOf(offset + 16384, split)))
+                    }
+                    assertArrayEquals(first, decoder.pollFrame())
+                    decoder.append(stream.copyOfRange(split, stream.size))
+                    assertArrayEquals(second, decoder.pollFrame())
+                    assertFalse(decoder.hasFrames())
+                }
+            }
+        }
+    }
+    @Test fun corruptSuccessorAfterAnUnpaddedBlockIsTerminal() {
+        val decoder = NcmReadReassembler()
+        decoder.append(Ntb16Codec.build(ByteArray(484), 1).copyOf(512))
+        decoder.append(byteArrayOf(0x4e))
+        val corrupt = Ntb16Codec.build(byteArrayOf(1), 2).copyOfRange(1, 29)
+        corrupt[0] = 0x42
+        assertThrows(IllegalArgumentException::class.java) { decoder.append(corrupt) }
+        assertThrows(IllegalArgumentException::class.java) { decoder.hasFrames() }
     }
     @Test fun invalidDatagramAndPadAreTerminalRatherThanSilentlyDropped() {
         for (pad in listOf(false, true)) {
