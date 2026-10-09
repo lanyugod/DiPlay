@@ -109,6 +109,7 @@ class ImageCropActivity : Activity() {
             )
         }
         setContentView(root)
+        if (H6CompatibilityProfile.enabled(this)) H6SystemBars.apply(window, hideStatusBar = true)
 
         executor.execute {
             val bitmap = try {

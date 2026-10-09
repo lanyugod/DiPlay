@@ -5,7 +5,7 @@
   "upstream_commit": "3e43e25c55921bdf5149f5f92851acf202ed353a",
   "previous_upstream_commit": "885dffb499d549fee5d0e848fc1314cad78c3efa",
   "local_version": "0.2.10-h6",
-  "local_version_code": 33,
+  "local_version_code": 35,
   "sync_date": "2026-10-04",
   "mode": "selective",
   "minimum_android_api": 23,

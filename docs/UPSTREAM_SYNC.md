@@ -1,6 +1,6 @@
 # 官方版本同步与 H6 Android 6 兼容
 
-本地版本为 **0.2.10-h6**（versionCode 33），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
+本地版本为 **0.2.10-h6**（versionCode 35），选择性同步官方 **v0.2.10**，标签提交为 [`3e43e25c55921bdf5149f5f92851acf202ed353a`](https://github.com/shihabal3amri/DiPlay/commit/3e43e25c55921bdf5149f5f92851acf202ed353a)。官方不存在2.0.10标签。检查日期为2026-10-04；不纳入标签之后的main提交。
 
 前次官方源码基线为885dffb。本轮逐项审阅到标签之间的97个提交，移植16个通用源码提交，其余处置见机器可读的[同步清单](upstream-sync.json)。这是所需功能的同步基线，不表示与官方全部功能或支持范围一致。官方最低Android 9，本分支mobile/common/shared及NDK保持API23、保留ARM32；automotive仍为API28。
 
@@ -34,6 +34,8 @@ BYD昼夜回调、CAN/CANFD电量、轮速/档位、仪表歌曲、独立转向�
 2026-10-04：shared355/common154，共509项，508通过、1项既有macOS通配绑定跳过、无失败/错误。窗口、触摸和媒体metadata回归在API23/29运行；新增API23 VPN授权核验/重新检查及USB描述符选择回归。普通mobile lint/assemble、standalone构建与跨模块NewApi通过；清单、公有树和笔记校验通过。
 
 standalone实车包已独立保存于`.private/h6-car-test/2026-10-04/DiPlay-0.2.10-h6-car-test.apk`，包名`com.shihab.diplay.hudtest`，versionName`0.2.10-h6-hud-test`/code29，minSdk23/target37，包含armeabi-v7a，v1/v2签名通过，19,274,221 bytes。SHA256：`65abca1e237616e3700adc5bbee36fe847119197876b6efee618f52cb9ffdb20`。显式运行输入来自校验过的官方公开0.2.10发布APK，源码不包含身份；本地签名校验6次通过，手机接受程度仍待测。详细来源、主体VPN授权及测试步骤见[实车交接](android_6/CAR_TEST_2026-10-04.md)。本轮未安装到车机或进行新的实车验证。
+
+2026-10-09：本地code35增加H6左侧导航栏窗口策略，上游标签/SHA及97项处置不变。code33实车已建立音乐/导航音轨，用户确认出声但音乐存在卡顿；UDP溢出、USB驱动所有权及窗口对照见[root调试记录](android_6/DEBUG_2026-10-09.md)，持续稳定性仍待验收。
 
 ## 下一次同步步骤
 
