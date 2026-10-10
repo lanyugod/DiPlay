@@ -35,7 +35,7 @@ BYD昼夜回调、CAN/CANFD电量、轮速/档位、仪表歌曲、独立转向�
 
 standalone实车包已独立保存于`.private/h6-car-test/2026-10-04/DiPlay-0.2.10-h6-car-test.apk`，包名`com.shihab.diplay.hudtest`，versionName`0.2.10-h6-hud-test`/code29，minSdk23/target37，包含armeabi-v7a，v1/v2签名通过，19,274,221 bytes。SHA256：`65abca1e237616e3700adc5bbee36fe847119197876b6efee618f52cb9ffdb20`。显式运行输入来自校验过的官方公开0.2.10发布APK，源码不包含身份；本地签名校验6次通过，手机接受程度仍待测。详细来源、主体VPN授权及测试步骤见[实车交接](android_6/CAR_TEST_2026-10-04.md)。本轮未安装到车机或进行新的实车验证。
 
-2026-10-09：本地code35增加H6左侧导航栏窗口策略，上游标签/SHA及97项处置不变。code33实车已建立音乐/导航音轨，用户确认出声但音乐存在卡顿；UDP溢出、USB驱动所有权及窗口对照见[root调试记录](android_6/DEBUG_2026-10-09.md)，持续稳定性仍待验收。
+2026-10-09：本地code35增加H6主页/裁剪页左侧导航栏窗口回退，上游标签/SHA及97项处置不变。code33实车已建立音乐/导航音轨；code34在root临时提高UDP接收上限后，用户确认音乐/导航流畅。系统包级策略隐藏DiPlay及高德原车左栏，CarPlay保持1280×720且应用切换正常，高德左侧搜索按钮响应。527项回归中526通过、1项既有跳过，构建/lint/API23专项通过。UDP调优、USB驱动所有权及各版本验收见[root调试记录](android_6/DEBUG_2026-10-09.md)，重启后的音频调优及长期稳定性仍待处理。
 
 ## 下一次同步步骤
 
